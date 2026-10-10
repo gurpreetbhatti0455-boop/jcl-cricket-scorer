@@ -2,104 +2,91 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>JCL Live Score Overlay</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#280044">
+<title>JCL IPL Style Live Score Overlay</title>
 <style>
 *{box-sizing:border-box}
-html,body{margin:0;background:transparent;font-family:Arial,Helvetica,sans-serif;color:white}
-.score{background:linear-gradient(100deg,rgba(4,14,26,.97),rgba(15,54,74,.96));border:1px solid rgba(125,180,210,.75);padding:12px 16px;width:100%;text-shadow:0 1px 2px #000}
-.brand{color:#55efa5;font-size:12px;font-weight:900;letter-spacing:1.7px}
-.row{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-top:6px}
-.team{font-size:14px;font-weight:800}
-.runs{font-size:30px;font-weight:900;line-height:1.1}
-.right{text-align:right}
-.bottom{display:flex;justify-content:space-between;gap:10px;margin-top:7px;color:#c4d8e8;font-size:11px}
-.state{font-size:11px;color:#ffd166;margin-top:4px;overflow-wrap:anywhere}
+html,body{margin:0;width:100%;min-height:100%;background:transparent;color:#fff;font-family:Arial,Helvetica,sans-serif}
+body{overflow:hidden}
+.bar{position:fixed;left:0;right:0;bottom:0;width:100%;padding:8px 12px 7px;background:linear-gradient(100deg,rgba(42,0,82,.99),rgba(153,0,88,.99) 48%,rgba(180,20,40,.99));border-top:3px solid #ffca28;border-bottom:2px solid #ffca28;box-shadow:0 -3px 18px #0007;text-shadow:0 1px 2px #0008}
+.head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+.brand{font-size:clamp(9px,1.7vw,13px);font-weight:900;letter-spacing:1px;color:#ffe36e;white-space:nowrap}
+.title{font-size:clamp(9px,1.6vw,12px);color:#fff;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.grid{display:grid;grid-template-columns:minmax(100px,1fr) minmax(95px,.8fr) minmax(150px,1.45fr) minmax(105px,1fr);align-items:stretch}
+.panel{min-width:0;padding:2px 10px;border-right:1px solid #ffffff55;display:flex;flex-direction:column;justify-content:center}
+.panel:first-child{padding-left:0}.panel:last-child{border:0;padding-right:0}
+.label{font-size:clamp(9px,1.5vw,12px);font-weight:800;text-transform:uppercase;color:#ffe6a5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.score{font-size:clamp(25px,4.1vw,39px);line-height:1.04;font-weight:900;white-space:nowrap}
+.overs{font-size:clamp(10px,1.8vw,14px);font-weight:700;margin-top:3px;white-space:nowrap}
+.batters{gap:4px}
+.batter{display:flex;justify-content:space-between;align-items:baseline;gap:6px;font-size:clamp(10px,1.75vw,14px);line-height:1.25;min-width:0}
+.name{font-weight:800;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.striker{color:#ffe36e}
+.stats{white-space:nowrap;font-weight:900}
+.bowler{font-size:clamp(11px,1.9vw,15px);font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.caption{font-size:clamp(9px,1.5vw,12px);color:#ffe6a5;margin-top:4px}
+.right{text-align:right;align-items:flex-end}
+.rr{font-size:clamp(13px,2.2vw,18px);font-weight:900;white-space:nowrap}
+.target{font-size:clamp(9px,1.5vw,12px);font-weight:900;color:#ffe36e;margin-top:4px;white-space:nowrap}
+.state{border-top:1px solid #ffffff40;padding-top:4px;margin-top:6px;font-size:clamp(8px,1.35vw,10px);color:#ffe6a5;overflow-wrap:anywhere}
+@media(max-width:520px){.bar{padding:7px 8px 6px}.head{margin-bottom:4px}.grid{grid-template-columns:minmax(78px,.9fr) minmax(65px,.7fr) minmax(100px,1.2fr) minmax(72px,.8fr)}.panel{padding:2px 5px}.brand{letter-spacing:.5px}.score{font-size:clamp(21px,6vw,30px)}.batter{font-size:clamp(9px,2.6vw,12px)}.label,.caption,.target{font-size:clamp(8px,2.2vw,10px)}.rr{font-size:clamp(11px,3vw,15px)}}
+@media(max-width:360px){.grid{grid-template-columns:minmax(70px,.8fr) minmax(60px,.65fr) minmax(88px,1.1fr) minmax(60px,.7fr)}.panel{padding-left:3px;padding-right:3px}}
 </style>
 </head>
 <body>
-<div class="score">
-  <div class="brand">CRICKET SCORER BY JCL</div>
-  <div class="row">
-    <div>
-      <div class="team" id="bat">WAITING FOR LIVE MATCH</div>
-      <div class="runs" id="score">0/0</div>
-    </div>
-    <div class="right">
-      <div class="team" id="bowl">JALANDHAR CRICKET LIVE</div>
-      <div id="overs">0.0 overs</div>
-    </div>
-  </div>
-  <div class="bottom">
-    <span id="match">Live cricket</span>
-    <span id="rr">RR 0.00</span>
-    <span id="target"></span>
+<div class="bar" role="status" aria-live="polite">
+  <div class="head"><div class="brand">JCL CRICKET LIVE • T20</div><div class="title" id="match">Connecting to match…</div></div>
+  <div class="grid">
+    <section class="panel"><div class="label" id="bat">Batting team</div><div class="score" id="score">0/0</div><div class="overs" id="overs">0.0 overs</div></section>
+    <section class="panel batters"><div class="label">Batters</div><div class="batter"><span class="name striker" id="striker">▶ Batter 1</span><span class="stats" id="strikerStats">0 (0)</span></div><div class="batter"><span class="name" id="nonStriker">Batter 2</span><span class="stats" id="nonStrikerStats">0 (0)</span></div></section>
+    <section class="panel"><div class="label">Bowler</div><div class="bowler" id="bowler">Bowler</div><div class="caption" id="innings">Innings 1</div></section>
+    <section class="panel right"><div class="label" id="bowl">Bowling team</div><div class="rr" id="rr">RR 0.00</div><div class="target" id="target"></div></section>
   </div>
   <div class="state" id="state">Connecting to live match…</div>
 </div>
-
 <script type="module">
-import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {getAuth, signInAnonymously} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {getFirestore, doc, onSnapshot} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const firebaseConfig={
-  apiKey:"AIzaSyDta_AAwNpU-9OAWtVgYGhB-GmGaZZFLsI",
-  authDomain:"jcl-cricket-scorer.firebaseapp.com",
-  projectId:"jcl-cricket-scorer",
-  storageBucket:"jcl-cricket-scorer.firebasestorage.app",
-  messagingSenderId:"112116011790",
-  appId:"1:112116011790:web:d6d2a4ca7416dce53efd5f",
-  measurementId:"G-DFJ3V8ZCV8"
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const firebaseConfig = {
+ apiKey:"AIzaSyDta_AAwNpU-9OAWtVgYGhB-GmGaZZFLsI",
+ authDomain:"jcl-cricket-scorer.firebaseapp.com",
+ projectId:"jcl-cricket-scorer",
+ storageBucket:"jcl-cricket-scorer.firebasestorage.app",
+ messagingSenderId:"112116011790",
+ appId:"1:112116011790:web:d6d2a4ca7416dce53efd5f",
+ measurementId:"G-DFJ3V8ZCV8"
 };
-
 const $=id=>document.getElementById(id);
 const matchId=new URLSearchParams(location.search).get("match");
-
 async function startOverlay(){
-  if(!matchId){
-    $("state").textContent="No Match Code in link. Open the link copied from JCL Scorer.";
-    return;
-  }
-
-  try{
-    const app=initializeApp(firebaseConfig);
-    const auth=getAuth(app);
-
-    $("state").textContent="Signing in securely…";
-    if(!auth.currentUser){
-      await signInAnonymously(auth);
-    }
-
-    const db=getFirestore(app);
-
-    onSnapshot(doc(db,"Matches",matchId),snap=>{
-      if(!snap.exists()){
-        $("state").textContent="Waiting for scorer to publish this match…";
-        return;
-      }
-
-      const d=snap.data();
-      $("bat").textContent=d.BattingTeam||d.TeamA||"Batting";
-      $("score").textContent=(d.Runs??0)+"/"+(d.Wickets??0);
-      $("bowl").textContent=d.BowlingTeam||d.TeamB||"Bowling";
-      $("overs").textContent=(d.Overs||"0.0")+" overs";
-      $("match").textContent=(d.Title||"JCL Match")+" • Innings "+(d.InningsNo||1);
-      $("rr").textContent="RR "+Number(d.RunRate||0).toFixed(2);
-      $("target").textContent=d.Target?"Target "+d.Target:"";
-      $("state").textContent=d.Status==="completed"
-        ?"MATCH COMPLETED"
-        :"LIVE • Match Code: "+matchId;
-    },err=>{
-      $("state").textContent="Cannot read score: "+(err.code||err.message);
-      console.error(err);
-    });
-  }catch(e){
-    $("state").textContent="Sign-in/connection failed: "+(e.code||e.message);
-    console.error(e);
-  }
+ if(!matchId){$("state").textContent="No Match Code in link. Open the link copied from JCL Scorer.";$("match").textContent="JCL live scoreboard";return;}
+ try{
+  const app=initializeApp(firebaseConfig),auth=getAuth(app);
+  $("state").textContent="Signing in securely…";
+  if(!auth.currentUser) await signInAnonymously(auth);
+  const db=getFirestore(app);
+  onSnapshot(doc(db,"Matches",matchId),snap=>{
+   if(!snap.exists()){$("state").textContent="Waiting for scorer to publish this match…";return;}
+   const d=snap.data();
+   $("bat").textContent=d.BattingTeam||d.TeamA||"Batting";
+   $("bowl").textContent=d.BowlingTeam||d.TeamB||"Bowling";
+   $("score").textContent=`${d.Runs??0}/${d.Wickets??0}`;
+   $("overs").textContent=`${d.Overs||"0.0"} overs`;
+   $("match").textContent=d.Title||"JCL Match";
+   $("innings").textContent=`Innings ${d.InningsNo||1}`;
+   $("striker").textContent=`▶ ${d.Striker||"Batter 1"}`;
+   $("nonStriker").textContent=d.NonStriker||"Batter 2";
+   $("strikerStats").textContent=`${d.StrikerRuns??0} (${d.StrikerBalls??0})`;
+   $("nonStrikerStats").textContent=`${d.NonStrikerRuns??0} (${d.NonStrikerBalls??0})`;
+   $("bowler").textContent=d.Bowler||"Bowler";
+   $("rr").textContent=`RR ${Number(d.RunRate||0).toFixed(2)}`;
+   $("target").textContent=d.Target?`TARGET ${d.Target}`:"";
+   $("state").textContent=d.Status==="completed"||d.Status==="innings-complete"?"MATCH / INNINGS COMPLETED":`LIVE • ${matchId}`;
+  },err=>{$("state").textContent=`Cannot read score: ${err.code||err.message}`;console.error(err);});
+ }catch(e){$("state").textContent=`Sign-in/connection failed: ${e.code||e.message}`;console.error(e);}
 }
-
 startOverlay();
 </script>
 </body>

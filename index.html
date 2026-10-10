@@ -885,13 +885,15 @@ render();
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, doc, setDoc, getDoc, getDocs, collection, query, where, orderBy, limit, serverTimestamp, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 const firebaseConfig={apiKey:"AIzaSyDta_AAwNpU-9OAWtVgYGhB-GmGaZZFLsI",authDomain:"jcl-cricket-scorer.firebaseapp.com",projectId:"jcl-cricket-scorer",storageBucket:"jcl-cricket-scorer.firebasestorage.app",messagingSenderId:"112116011790",appId:"1:112116011790:web:d6d2a4ca7416dce53efd5f",measurementId:"G-DFJ3V8ZCV8"};
 const app=initializeApp(firebaseConfig),db=getFirestore(app),auth=getAuth(app),provider=new GoogleAuthProvider();
 let currentUser=null,lastJson="",busy=false,queued=false;
 const $=id=>document.getElementById(id);
-const waitAuth=new Promise(resolve=>onAuthStateChanged(auth,u=>{currentUser=u;window.__JCL_user=u; if(u){document.body.classList.add("home-mode");$("googleSignInArea").classList.add("hidden");$("homeActions").classList.remove("hidden");$("signedInLabel").textContent="Signed in: "+(u.displayName||u.email||"Google account");}else{document.body.classList.add("home-mode");$("googleSignInArea").classList.remove("hidden");$("homeActions").classList.add("hidden");} resolve(u);}));
-$("googleSignInBtn").onclick=async()=>{try{await signInWithPopup(auth,provider);}catch(e){$("homeStatus").textContent="Google sign-in failed: "+e.message;}};
+const waitAuth=new Promise(resolve=>onAuthStateChanged(auth,u=>{currentUser=u;window.__JCL_user=u;if(u){document.body.classList.add("home-mode");$("googleSignInArea").classList.add("hidden");$("homeActions").classList.remove("hidden");$("signedInLabel").textContent="Signed in: "+(u.displayName||u.email||"Google account");}else{document.body.classList.add("home-mode");$("googleSignInArea").classList.remove("hidden");$("homeActions").classList.add("hidden");}resolve(u);}));
+// Process the return from Google's mobile-friendly redirect sign-in flow.
+try{await getRedirectResult(auth);}catch(e){console.error("Google redirect sign-in error",e);$("homeStatus").textContent="Google sign-in failed: "+(e.code||e.message)+". Check Firebase Authorized domains.";}
+$("googleSignInBtn").onclick=async()=>{try{$("homeStatus").textContent="Opening Google sign-in…";provider.setCustomParameters({prompt:"select_account"});await signInWithRedirect(auth,provider);}catch(e){$("homeStatus").textContent="Google sign-in failed: "+(e.code||e.message)+". Check Firebase Authentication settings.";}};
 $("signOutBtn").onclick=async()=>{try{await signOut(auth);showHome();}catch(e){alert(e.message)}};
 window.__JCL_allocateAccessCode=async(matchId)=>{
  await waitAuth;if(!currentUser)throw new Error("Sign in with Google first.");

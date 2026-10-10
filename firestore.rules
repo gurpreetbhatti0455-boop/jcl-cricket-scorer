@@ -1,0 +1,15 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /Matches/{matchId} {
+      // The overlay link contains a hard-to-guess match code; overlay needs read-only access.
+      allow read: if true;
+      // Scorer signs in anonymously. Only the creator UID can create/update its match.
+      allow create: if request.auth != null && request.resource.data.OwnerUid == request.auth.uid;
+      allow update: if request.auth != null
+                    && resource.data.OwnerUid == request.auth.uid
+                    && request.resource.data.OwnerUid == resource.data.OwnerUid;
+      allow delete: if false;
+    }
+  }
+}

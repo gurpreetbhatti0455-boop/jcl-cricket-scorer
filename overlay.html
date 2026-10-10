@@ -1,64 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JCL Live Score Overlay</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:transparent;font-family:Arial,Helvetica,sans-serif;color:white}
+.score{background:linear-gradient(100deg,rgba(4,14,26,.97),rgba(15,54,74,.96));border:1px solid rgba(125,180,210,.75);padding:12px 16px;width:100%;text-shadow:0 1px 2px #000}
+.brand{color:#55efa5;font-size:12px;font-weight:900;letter-spacing:1.7px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-top:6px}
+.team{font-size:14px;font-weight:800}
+.runs{font-size:30px;font-weight:900;line-height:1.1}
+.right{text-align:right}
+.bottom{display:flex;justify-content:space-between;gap:10px;margin-top:7px;color:#c4d8e8;font-size:11px}
+.state{font-size:11px;color:#ffd166;margin-top:4px;overflow-wrap:anywhere}
+</style>
+</head>
+<body>
+<div class="score">
+  <div class="brand">CRICKET SCORER BY JCL</div>
+  <div class="row">
+    <div>
+      <div class="team" id="bat">WAITING FOR LIVE MATCH</div>
+      <div class="runs" id="score">0/0</div>
+    </div>
+    <div class="right">
+      <div class="team" id="bowl">JALANDHAR CRICKET LIVE</div>
+      <div id="overs">0.0 overs</div>
+    </div>
+  </div>
+  <div class="bottom">
+    <span id="match">Live cricket</span>
+    <span id="rr">RR 0.00</span>
+    <span id="target"></span>
+  </div>
+  <div class="state" id="state">Connecting to live match…</div>
+</div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth, signInAnonymously} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getFirestore, doc, onSnapshot} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDta_AAwNpU-9OAWtVgYGhB-GmGaZZFLsI",
-  authDomain: "jcl-cricket-scorer.firebaseapp.com",
-  projectId: "jcl-cricket-scorer",
-  storageBucket: "jcl-cricket-scorer.firebasestorage.app",
-  messagingSenderId: "112116011790",
-  appId: "1:112116011790:web:d6d2a4ca7416dce53efd5f",
-  measurementId: "G-DFJ3V8ZCV8"
+const firebaseConfig={
+  apiKey:"AIzaSyDta_AAwNpU-9OAWtVgYGhB-GmGaZZFLsI",
+  authDomain:"jcl-cricket-scorer.firebaseapp.com",
+  projectId:"jcl-cricket-scorer",
+  storageBucket:"jcl-cricket-scorer.firebasestorage.app",
+  messagingSenderId:"112116011790",
+  appId:"1:112116011790:web:d6d2a4ca7416dce53efd5f",
+  measurementId:"G-DFJ3V8ZCV8"
 };
 
-const $ = id => document.getElementById(id);
-const matchId = new URLSearchParams(location.search).get("match");
+const $=id=>document.getElementById(id);
+const matchId=new URLSearchParams(location.search).get("match");
 
-async function startOverlay() {
-  if (!matchId) {
-    $("state").textContent = "No Match Code in link. Open the link copied from JCL Scorer.";
+async function startOverlay(){
+  if(!matchId){
+    $("state").textContent="No Match Code in link. Open the link copied from JCL Scorer.";
     return;
   }
 
-  try {
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+  try{
+    const app=initializeApp(firebaseConfig);
+    const auth=getAuth(app);
 
-    $("state").textContent = "Signing in securely…";
-    await signInAnonymously(auth);
+    $("state").textContent="Signing in securely…";
+    if(!auth.currentUser){
+      await signInAnonymously(auth);
+    }
 
-    const db = getFirestore(app);
+    const db=getFirestore(app);
 
-    onSnapshot(doc(db, "Matches", matchId), snap => {
-      if (!snap.exists()) {
-        $("state").textContent = "Waiting for scorer to publish this match…";
+    onSnapshot(doc(db,"Matches",matchId),snap=>{
+      if(!snap.exists()){
+        $("state").textContent="Waiting for scorer to publish this match…";
         return;
       }
 
-      const d = snap.data();
-      $("bat").textContent = d.BattingTeam || d.TeamA || "Batting";
-      $("score").textContent = (d.Runs ?? 0) + "/" + (d.Wickets ?? 0);
-      $("bowl").textContent = d.BowlingTeam || d.TeamB || "Bowling";
-      $("overs").textContent = (d.Overs || "0.0") + " overs";
-      $("match").textContent = (d.Title || "JCL Match") + " • Innings " + (d.InningsNo || 1);
-      $("rr").textContent = "RR " + Number(d.RunRate || 0).toFixed(2);
-      $("target").textContent = d.Target ? "Target " + d.Target : "";
-      $("state").textContent = d.Status === "completed"
-        ? "MATCH COMPLETED"
-        : "LIVE • Match Code: " + matchId;
-    }, err => {
-      $("state").textContent = "Cannot read score: " + err.code;
+      const d=snap.data();
+      $("bat").textContent=d.BattingTeam||d.TeamA||"Batting";
+      $("score").textContent=(d.Runs??0)+"/"+(d.Wickets??0);
+      $("bowl").textContent=d.BowlingTeam||d.TeamB||"Bowling";
+      $("overs").textContent=(d.Overs||"0.0")+" overs";
+      $("match").textContent=(d.Title||"JCL Match")+" • Innings "+(d.InningsNo||1);
+      $("rr").textContent="RR "+Number(d.RunRate||0).toFixed(2);
+      $("target").textContent=d.Target?"Target "+d.Target:"";
+      $("state").textContent=d.Status==="completed"
+        ?"MATCH COMPLETED"
+        :"LIVE • Match Code: "+matchId;
+    },err=>{
+      $("state").textContent="Cannot read score: "+(err.code||err.message);
       console.error(err);
     });
-
-  } catch (e) {
-    $("state").textContent = "Sign-in/connection failed: " + (e.code || e.message);
+  }catch(e){
+    $("state").textContent="Sign-in/connection failed: "+(e.code||e.message);
     console.error(e);
   }
 }
 
 startOverlay();
 </script>
+</body>
+</html>

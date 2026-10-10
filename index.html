@@ -885,31 +885,15 @@ render();
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, doc, setDoc, getDoc, getDocs, collection, query, where, orderBy, limit, serverTimestamp, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 const firebaseConfig={apiKey:"AIzaSyDta_AAwNpU-9OAWtVgYGhB-GmGaZZFLsI",authDomain:"jcl-cricket-scorer.firebaseapp.com",projectId:"jcl-cricket-scorer",storageBucket:"jcl-cricket-scorer.firebasestorage.app",messagingSenderId:"112116011790",appId:"1:112116011790:web:d6d2a4ca7416dce53efd5f",measurementId:"G-DFJ3V8ZCV8"};
 const app=initializeApp(firebaseConfig),db=getFirestore(app),auth=getAuth(app),provider=new GoogleAuthProvider();
 let currentUser=null,lastJson="",busy=false,queued=false;
 const $=id=>document.getElementById(id);
 const waitAuth=new Promise(resolve=>onAuthStateChanged(auth,u=>{currentUser=u;window.__JCL_user=u;if(u){document.body.classList.add("home-mode");$("googleSignInArea").classList.add("hidden");$("homeActions").classList.remove("hidden");$("signedInLabel").textContent="Signed in: "+(u.displayName||u.email||"Google account");}else{document.body.classList.add("home-mode");$("googleSignInArea").classList.remove("hidden");$("homeActions").classList.add("hidden");}resolve(u);}));
-// Use popup sign-in on GitHub Pages to avoid redirect-storage issues on mobile browsers.
-$("googleSignInBtn").onclick=async()=>{
-  const btn=$("googleSignInBtn");
-  try{
-    btn.disabled=true;
-    $("homeStatus").textContent="Opening Google sign-in…";
-    provider.setCustomParameters({prompt:"select_account"});
-    const result=await signInWithPopup(auth,provider);
-    currentUser=result.user;
-    window.__JCL_user=currentUser;
-    $("googleSignInArea").classList.add("hidden");
-    $("homeActions").classList.remove("hidden");
-    $("signedInLabel").textContent="Signed in: "+(currentUser.displayName||currentUser.email||"Google account");
-    $("homeStatus").textContent="";
-  }catch(e){
-    console.error("Google popup sign-in error",e);
-    $("homeStatus").textContent="Google sign-in failed: "+(e.code||e.message)+". If a popup was blocked, allow pop-ups for this site and try again.";
-  }finally{btn.disabled=false;}
-};
+// Process the return from Google's mobile-friendly redirect sign-in flow.
+try{await getRedirectResult(auth);}catch(e){console.error("Google redirect sign-in error",e);$("homeStatus").textContent="Google sign-in failed: "+(e.code||e.message)+". Check Firebase Authorized domains.";}
+$("googleSignInBtn").onclick=async()=>{try{$("homeStatus").textContent="Opening Google sign-in…";provider.setCustomParameters({prompt:"select_account"});await signInWithRedirect(auth,provider);}catch(e){$("homeStatus").textContent="Google sign-in failed: "+(e.code||e.message)+". Check Firebase Authentication settings.";}};
 $("signOutBtn").onclick=async()=>{try{await signOut(auth);showHome();}catch(e){alert(e.message)}};
 window.__JCL_allocateAccessCode=async(matchId)=>{
  await waitAuth;if(!currentUser)throw new Error("Sign in with Google first.");
@@ -957,7 +941,7 @@ function showScorer(){document.body.classList.remove("home-mode");$("jclHome").c
 window.__JCL_showHome=showHome;
 function showPanel(title,html){$("jclHome").classList.add("hidden");$("homePanel").classList.remove("hidden");$("homePanelTitle").textContent=title;$("homePanelContent").innerHTML=html;}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-async function listScreen(mode){try{const rows=await window.__JCL_listMatches(mode);showPanel(mode==="live"?"All Live Matches":"Match History",rows.length?rows.map(d=>`<div class="home-item"><strong>${esc(d.Title||d.TeamA+" vs "+d.TeamB||"JCL Match")}</strong><small>${esc(d.TeamA||"")} vs ${esc(d.TeamB||"")} • ${esc(d.Runs??0)}/${esc(d.Wickets??0)} • ${esc(d.Overs||"0.0")} overs<br>Code: ${esc(d.AccessCode||"Not assigned")} • ${esc(d.Status||"live")}</small><button class="btn green" data-open-match="${esc(d.id)}" data-mode="${mode}">${mode==="history"?"Open / Resume":"Umpire Mode / Resume"}</button>${mode==="history"?`<button class="btn" data-scoreboard="${esc(d.id)}">Open Scoreboard</button>`:""}</div>`).join(""):"<p>No matches found yet.</p>");$("homePanelContent").querySelectorAll("[data-open-match]").forEach(b=>b.onclick=()=>window.__JCL_openRemoteMatch(b.dataset.openMatch,b.dataset.mode).catch(e=>alert(e.message)));$("homePanelContent").querySelectorAll("[data-scoreboard]").forEach(b=>b.onclick=()=>{const id=b.dataset.scoreboard;location.href="overlay.html?match="+encodeURIComponent(id)});}catch(e){showPanel("Error",`<p>${esc(e.message)}</p>`);}}
+async function listScreen(mode){try{const rows=await window.__JCL_listMatches(mode);showPanel(mode==="live"?"All Live Matches":"Match History",rows.length?rows.map(d=>`<div class="home-item"><strong>${esc(d.Title||d.TeamA+" vs "+d.TeamB||"JCL Match")}</strong><small>${esc(d.TeamA||"")} vs ${esc(d.TeamB||"")} • ${esc(d.Runs??0)}/${esc(d.Wickets??0)} • ${esc(d.Overs||"0.0")} overs<br>${esc(d.Status||"live")}</small><button class="btn green" data-open-match="${esc(d.id)}" data-mode="${mode}">${mode==="history"?"Open / Resume":"Umpire Mode / Resume"}</button>${mode==="history"?`<button class="btn" data-scoreboard="${esc(d.id)}">Open Scoreboard</button>`:""}</div>`).join(""):"<p>No matches found yet.</p>");$("homePanelContent").querySelectorAll("[data-open-match]").forEach(b=>b.onclick=()=>window.__JCL_openRemoteMatch(b.dataset.openMatch,b.dataset.mode).catch(e=>alert(e.message)));$("homePanelContent").querySelectorAll("[data-scoreboard]").forEach(b=>b.onclick=()=>{const id=b.dataset.scoreboard;location.href="overlay.html?match="+encodeURIComponent(id)});}catch(e){showPanel("Error",`<p>${esc(e.message)}</p>`);}}
 $("homeNewMatch").onclick=()=>{showScorer();document.body.classList.remove("match-live");window.scrollTo(0,0);};$("returnHomeBtn").onclick=()=>showHome();
 $("homeAllLive").onclick=()=>listScreen("live");$("homeHistory").onclick=()=>listScreen("history");$("homeBack").onclick=()=>showHome();
 $("homePrism").onclick=()=>showPanel("How to Go Live (PRISM Guide)",`<div class="guide-step"><b>1.</b> Open JCL Cricket Scorer and start your match. Tap <b>Copy Overlay Link</b>.</div><div class="guide-step"><b>2.</b> Open PRISM Live Studio.</div><div class="guide-step"><b>3.</b> <b>Swipe left repeatedly</b> until the <b>Website</b> option appears, then tap <b>Website</b>.</div><div class="guide-step"><b>4.</b> Paste the copied overlay link and enter the title <b>JCL Live Score</b>.</div><div class="guide-step"><b>5.</b> Start the stream setup and tap the overlay title in the preview to display the scoreboard.</div><div class="guide-step"><b>6.</b> Switch to landscape, adjust the cricket video framing and scoreboard position, check the preview, then start the broadcast.</div>`);

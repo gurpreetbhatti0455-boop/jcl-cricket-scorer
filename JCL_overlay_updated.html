@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#170d18">
+<title>JCL Cricket Live Score</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:transparent;color:#fff;font-family:Arial,Helvetica,sans-serif;overflow:hidden}
+:root{--gold:#ffd35a;--blue:#087cc2;--red:#a9182b}
+.scorebar{position:fixed;left:0;right:0;bottom:0;background:linear-gradient(100deg,rgba(22,14,24,.98),rgba(42,17,35,.98) 55%,rgba(19,31,48,.98));border-top:3px solid var(--gold);box-shadow:0 -4px 22px #0008;text-shadow:0 1px 2px #0009}
+.topline{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:5px 12px;background:linear-gradient(90deg,#154b70,#172434);font-size:clamp(9px,1.25vw,13px);font-weight:800;letter-spacing:.5px}
+.brand{color:var(--gold);white-space:nowrap}.matchname{text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.main{display:grid;grid-template-columns:minmax(100px,1.1fr) minmax(135px,1.2fr) minmax(180px,1.6fr) minmax(130px,1.2fr);align-items:stretch}
+.panel{padding:7px 10px;border-right:1px solid #ffffff35;min-width:0;display:flex;flex-direction:column;justify-content:center}.panel:last-child{border:0}
+.kicker{font-size:clamp(8px,1.1vw,11px);font-weight:900;color:#ffdc78;letter-spacing:.8px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.score{font-size:clamp(27px,4.2vw,45px);font-weight:950;line-height:1.05;white-space:nowrap}.overs{font-size:clamp(10px,1.4vw,14px);font-weight:800;margin-top:4px}
+.line{display:flex;justify-content:space-between;gap:7px;align-items:baseline;font-size:clamp(9px,1.3vw,13px);line-height:1.45}.line .player{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}.line .stats{font-weight:900;white-space:nowrap}.active{color:var(--gold)}.sub{font-size:clamp(8px,1vw,10px);color:#d3dce6;margin-top:2px}
+.bowler-name{font-size:clamp(12px,1.7vw,17px);font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:3px 0}.bowlingfig{font-size:clamp(10px,1.35vw,13px);font-weight:800}.right{text-align:right;align-items:flex-end}.rate{font-size:clamp(15px,2.2vw,23px);font-weight:950;color:#fff;white-space:nowrap}.chase{font-size:clamp(9px,1.3vw,13px);font-weight:900;color:var(--gold);margin-top:4px;text-align:right}.lastballs{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}.ball{background:#ffffff1b;border:1px solid #ffffff40;border-radius:4px;min-width:19px;text-align:center;padding:3px 4px;font-size:10px;font-weight:900}.ball.w{background:#a9182b}.ball.x{color:#ffe07a}
+.bottomline{display:flex;justify-content:space-between;gap:8px;padding:4px 12px;background:#0b111b;border-top:1px solid #ffffff26;color:#e2e7ee;font-size:clamp(8px,1vw,10px);font-weight:800}.bottomline span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.event{position:fixed;z-index:20;left:0;right:0;top:40%;transform:translateY(-50%);padding:13px 8px;text-align:center;background:linear-gradient(90deg,transparent,rgba(0,118,208,.96) 12%,rgba(0,118,208,.96) 88%,transparent);border-top:2px solid #8fe7ff;border-bottom:2px solid #8fe7ff;font-weight:1000;font-size:clamp(32px,7vw,76px);letter-spacing:3px;text-shadow:0 2px 8px #001c38;opacity:0;pointer-events:none}
+.event small{display:block;font-size:clamp(9px,1.5vw,15px);letter-spacing:3px;margin-top:1px}.event.show{animation:flash 2.1s ease both}
+@keyframes flash{0%{opacity:0;transform:translateY(-42%) scale(.96)}12%,78%{opacity:1;transform:translateY(-50%) scale(1)}100%{opacity:0;transform:translateY(-58%) scale(1.02)}}
+@media(max-width:600px){.topline{padding:4px 6px}.main{grid-template-columns:1fr 1.15fr 1.2fr 1fr}.panel{padding:5px 5px}.score{font-size:clamp(20px,5.2vw,32px)}.line{font-size:clamp(8px,2vw,11px)}.kicker{font-size:clamp(7px,1.8vw,9px)}.bowlingfig{font-size:9px}.bottomline{padding:4px 6px}}
+@media(max-width:390px){.main{grid-template-columns:.9fr 1.1fr 1fr .9fr}.panel{padding:4px 3px}.score{font-size:20px}.lastballs{gap:2px}.ball{min-width:15px;padding:2px;font-size:8px}}
+</style>
+</head>
+<body>
+<div class="event" id="eventBanner">FOUR<small>BOUNDARY</small></div>
+<div class="scorebar" role="status" aria-live="polite">
+ <div class="topline"><span class="brand">JCL • CRICKET LIVE</span><span class="matchname" id="match">Connecting to match…</span></div>
+ <div class="main">
+  <section class="panel"><div class="kicker" id="bat">BATTING TEAM</div><div class="score" id="score">0/0</div><div class="overs" id="overs">0.0 / 20 overs</div></section>
+  <section class="panel"><div class="kicker">BATTERS</div><div class="line"><span class="player active" id="striker">▶ Batter 1</span><span class="stats" id="strikerStats">0 (0)</span></div><div class="line"><span class="player" id="nonStriker">Batter 2</span><span class="stats" id="nonStrikerStats">0 (0)</span></div><div class="sub" id="battingExtras">4s 0 • 6s 0</div></section>
+  <section class="panel"><div class="kicker">BOWLER</div><div class="bowler-name" id="bowler">Bowler</div><div class="bowlingfig" id="bowlerFigures">0.0 overs • 0 runs • 0 wickets</div><div class="sub" id="bowlerExtra">Econ 0.00 • Wd 0 • Nb 0</div><div class="lastballs" id="lastBalls"></div></section>
+  <section class="panel right"><div class="kicker" id="bowl">BOWLING TEAM</div><div class="rate" id="rr">CRR 0.00</div><div class="chase" id="target">TARGET —</div><div class="chase" id="need"></div><div class="chase" id="requiredRate"></div></section>
+ </div>
+ <div class="bottomline"><span id="matchFormat">JCL LIVE SCORE</span><span id="innings">INNINGS 1</span><span id="state">CONNECTING…</span></div>
+</div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const firebaseConfig={apiKey:"AIzaSyDta_AAwNpU-9OAWtVgYGhB-GmGaZZFLsI",authDomain:"jcl-cricket-scorer.firebaseapp.com",projectId:"jcl-cricket-scorer",storageBucket:"jcl-cricket-scorer.firebasestorage.app",messagingSenderId:"112116011790",appId:"1:112116011790:web:d6d2a4ca7416dce53efd5f",measurementId:"G-DFJ3V8ZCV8"};
+const $=id=>document.getElementById(id),matchId=new URLSearchParams(location.search).get("match");
+let lastEventKey="",bannerTimer=null;
+function showEvent(label){let title="",sub="";if(label==="4"){title="FOUR";sub="BOUNDARY"}else if(label==="6"){title="SIX";sub="MAXIMUM"}else if(label==="W"){title="WICKET";sub="OUT"}else return;const el=$("eventBanner");el.innerHTML=`${title}<small>${sub}</small>`;el.classList.remove("show");void el.offsetWidth;el.classList.add("show");clearTimeout(bannerTimer);bannerTimer=setTimeout(()=>el.classList.remove("show"),2300)}
+function overs(legal){return `${Math.floor((Number(legal)||0)/6)}.${(Number(legal)||0)%6}`}
+function render(d){
+ const s=d.FullState||{},c=s.current||{},teams=s.teams||[d.TeamA||"Team A",d.TeamB||"Team B"],batIndex=Number(c.batting)||0;
+ const batting=teams[batIndex]||d.BattingTeam||"Batting",bowling=teams[1-batIndex]||d.BowlingTeam||"Bowling";
+ $("bat").textContent=batting.toUpperCase();$("bowl").textContent=bowling.toUpperCase();
+ $("score").textContent=`${c.runs??d.Runs??0}/${c.wickets??d.Wickets??0}`;
+ $("overs").textContent=`${overs(c.legalBalls??d.LegalBalls)} / ${s.maxOvers||d.MaxOvers||20} overs`;
+ $("match").textContent=d.Title||s.matchName||"JCL Match";$("matchFormat").textContent=`${s.matchName||d.Title||"JCL MATCH"} • ${s.maxOvers||d.MaxOvers||20} OVERS`;
+ $("innings").textContent=`${s.inningsNo||d.InningsNo||1}${(s.inningsNo||d.InningsNo||1)===1?"ST":"ND"} INNINGS`;
+ const bats=c.batters||[],striker=bats[c.striker]||{},non=bats[c.nonStriker]||{};
+ $("striker").textContent=`▶ ${striker.name||d.Striker||"Batter 1"}`;$("strikerStats").textContent=`${striker.runs??d.StrikerRuns??0} (${striker.balls??d.StrikerBalls??0})`;
+ $("nonStriker").textContent=non.name||d.NonStriker||"Batter 2";$("nonStrikerStats").textContent=`${non.runs??d.NonStrikerRuns??0} (${non.balls??d.NonStrikerBalls??0})`;
+ $("battingExtras").textContent=`4s ${striker.fours||0}/${non.fours||0} • 6s ${striker.sixes||0}/${non.sixes||0}`;
+ const bowlers=c.bowlers||{},b=bowlers[c.bowler]||{},legal=Number(b.legal)||0,ov=legal/6,econ=ov?(Number(b.runs)||0)/ov:0;
+ $("bowler").textContent=c.bowler||d.Bowler||"Bowler";$("bowlerFigures").textContent=`${overs(legal)} overs • ${b.runs||0} runs • ${b.wickets||0} wickets`;
+ $("bowlerExtra").textContent=`Econ ${econ.toFixed(2)} • Wd ${b.wides||0} • Nb ${b.noBalls||0}`;
+ const currentRuns=Number(c.runs??d.Runs)||0,balls=Number(c.legalBalls??d.LegalBalls)||0,crr=balls?(currentRuns/(balls/6)):0;
+ $("rr").textContent=`CRR ${crr.toFixed(2)}`;
+ const first=(s.innings||[])[0],target=Number(d.Target)||((s.inningsNo||1)===2&&first?Number(first.runs)+1:0);
+ if(target){const need=Math.max(0,target-currentRuns),remaining=Math.max(0,(Number(s.maxOvers||d.MaxOvers||20)*6)-balls);$("target").textContent=`TARGET ${target}`;$("need").textContent=`NEED ${need} RUNS FROM ${remaining} BALLS`; $("requiredRate").textContent=`REQ RR ${remaining?(need/(remaining/6)).toFixed(2):need===0?"0.00":"—"}`}
+ else{$("target").textContent="TARGET —";$("need").textContent=(s.inningsNo||1)===1?"1ST INNINGS":"";$("requiredRate").textContent=""}
+ const logs=c.deliveryLog||[];const recent=logs.slice(-6);
+ $("lastBalls").innerHTML=recent.map(x=>{const lab=String(x.label||"0");const cls=lab==="W"?"w":(/[a-z]/i.test(lab)?"x":"");return `<span class="ball ${cls}">${lab}</span>`}).join("");
+ $("state").textContent=d.Status==="completed"||d.Status==="innings-complete"?"INNINGS / MATCH COMPLETE":`LIVE • ${overs(balls)} OVER`;
+ const last=logs[logs.length-1];if(last){const key=`${d.UpdatedAt?.seconds||d.UpdatedAtMs||""}-${logs.length}-${last.over}-${last.ball}-${last.label}`;if(key!==lastEventKey){if(lastEventKey)showEvent(String(last.label));lastEventKey=key}}
+}
+async function start(){if(!matchId){$("state").textContent="NO MATCH ID IN LINK";$("match").textContent="JCL LIVE SCORE";return}
+ try{const app=initializeApp(firebaseConfig),auth=getAuth(app);$("state").textContent="CONNECTING…";if(!auth.currentUser)await signInAnonymously(auth);const db=getFirestore(app);onSnapshot(doc(db,"Matches",matchId),snap=>{if(!snap.exists()){$("state").textContent="WAITING FOR SCORER…";return}render(snap.data())},err=>{$("state").textContent=`SCORE ERROR: ${err.code||err.message}`;console.error(err)})}catch(e){$("state").textContent=`CONNECTION ERROR: ${e.code||e.message}`;console.error(e)}}
+start();
+</script>
+</body></html>

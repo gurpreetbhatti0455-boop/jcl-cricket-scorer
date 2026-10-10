@@ -3,88 +3,86 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#280044">
-<title>JCL IPL Style Live Score Overlay</title>
+<meta name="theme-color" content="#071321">
+<title>JCL Cricket Live — Broadcast Overlay</title>
 <style>
-*{box-sizing:border-box}
-html,body{margin:0;width:100%;min-height:100%;background:transparent;color:#fff;font-family:Arial,Helvetica,sans-serif}
-body{overflow:hidden}
-.bar{position:fixed;left:0;right:0;bottom:0;width:100%;padding:8px 12px 7px;background:linear-gradient(100deg,rgba(42,0,82,.99),rgba(153,0,88,.99) 48%,rgba(180,20,40,.99));border-top:3px solid #ffca28;border-bottom:2px solid #ffca28;box-shadow:0 -3px 18px #0007;text-shadow:0 1px 2px #0008}
-.head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
-.brand{font-size:clamp(9px,1.7vw,13px);font-weight:900;letter-spacing:1px;color:#ffe36e;white-space:nowrap}
-.title{font-size:clamp(9px,1.6vw,12px);color:#fff;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.grid{display:grid;grid-template-columns:minmax(100px,1fr) minmax(95px,.8fr) minmax(150px,1.45fr) minmax(105px,1fr);align-items:stretch}
-.panel{min-width:0;padding:2px 10px;border-right:1px solid #ffffff55;display:flex;flex-direction:column;justify-content:center}
-.panel:first-child{padding-left:0}.panel:last-child{border:0;padding-right:0}
-.label{font-size:clamp(9px,1.5vw,12px);font-weight:800;text-transform:uppercase;color:#ffe6a5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.score{font-size:clamp(25px,4.1vw,39px);line-height:1.04;font-weight:900;white-space:nowrap}
-.overs{font-size:clamp(10px,1.8vw,14px);font-weight:700;margin-top:3px;white-space:nowrap}
-.batters{gap:4px}
-.batter{display:flex;justify-content:space-between;align-items:baseline;gap:6px;font-size:clamp(10px,1.75vw,14px);line-height:1.25;min-width:0}
-.name{font-weight:800;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.striker{color:#ffe36e}
-.stats{white-space:nowrap;font-weight:900}
-.bowler{font-size:clamp(11px,1.9vw,15px);font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.caption{font-size:clamp(9px,1.5vw,12px);color:#ffe6a5;margin-top:4px}
-.right{text-align:right;align-items:flex-end}
-.rr{font-size:clamp(13px,2.2vw,18px);font-weight:900;white-space:nowrap}
-.target{font-size:clamp(9px,1.5vw,12px);font-weight:900;color:#ffe36e;margin-top:4px;white-space:nowrap}
-.state{border-top:1px solid #ffffff40;padding-top:4px;margin-top:6px;font-size:clamp(8px,1.35vw,10px);color:#ffe6a5;overflow-wrap:anywhere}
-@media(max-width:520px){.bar{padding:7px 8px 6px}.head{margin-bottom:4px}.grid{grid-template-columns:minmax(78px,.9fr) minmax(65px,.7fr) minmax(100px,1.2fr) minmax(72px,.8fr)}.panel{padding:2px 5px}.brand{letter-spacing:.5px}.score{font-size:clamp(21px,6vw,30px)}.batter{font-size:clamp(9px,2.6vw,12px)}.label,.caption,.target{font-size:clamp(8px,2.2vw,10px)}.rr{font-size:clamp(11px,3vw,15px)}}
-@media(max-width:360px){.grid{grid-template-columns:minmax(70px,.8fr) minmax(60px,.65fr) minmax(88px,1.1fr) minmax(60px,.7fr)}.panel{padding-left:3px;padding-right:3px}}
+:root{--gold:#ffd166;--gold2:#ffb52e;--ink:#071321;--panel:#101f31;--muted:#b7c6d8;--line:#ffffff24;--red:#e84950;--blue:#2d7ec1}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:transparent;color:#fff;font-family:Arial,Helvetica,sans-serif}body{overflow:hidden}
+/* Compact lower third. The right-bottom corner is deliberately kept clear for the PRISM watermark. */
+.lower{position:fixed;left:1.1%;right:13%;bottom:2.2%;display:grid;grid-template-columns:minmax(175px,1.02fr) minmax(300px,1.62fr) minmax(170px,1fr);min-height:112px;max-height:24vh;background:linear-gradient(110deg,rgba(5,15,28,.97),rgba(13,30,49,.97));border:1px solid #ffffff35;border-top:3px solid var(--gold);border-radius:9px;overflow:hidden;box-shadow:0 4px 18px #0008;text-shadow:0 1px 2px #0009}
+.batters,.center,.bowling{min-width:0;padding:9px 12px}.batters{background:linear-gradient(135deg,#13283d,#0c1b2b);border-right:1px solid var(--line);display:flex;flex-direction:column;justify-content:center;gap:6px}.section-label{font-size:clamp(8px,1vw,11px);font-weight:900;letter-spacing:1.1px;color:var(--gold);text-transform:uppercase;margin-bottom:1px}.player{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px;align-items:center;min-width:0}.player-name{font-size:clamp(12px,1.55vw,18px);font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.player-name.active:before{content:'▶ ';color:var(--gold);font-size:.7em}.player-stat{text-align:right;white-space:nowrap;font-weight:900;font-size:clamp(12px,1.5vw,17px)}.player-sub{grid-column:1/-1;font-size:clamp(8px,.9vw,10px);color:var(--muted);margin-top:-4px;letter-spacing:.2px}
+.center{display:flex;flex-direction:column;justify-content:center;gap:6px;background:linear-gradient(120deg,#152c43,#0d1b2c 70%);position:relative}.teams{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:center}.team{font-size:clamp(9px,1.2vw,14px);font-weight:900;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.team.left{text-align:left;color:#d8e4f2}.team.right{text-align:right;color:#fff}.vs{font-size:9px;font-weight:900;color:var(--gold);border:1px solid #ffd16666;padding:3px 5px;border-radius:4px}.scoreline{display:flex;align-items:baseline;justify-content:center;gap:12px;white-space:nowrap}.score{font-size:clamp(29px,4.1vw,48px);font-weight:1000;line-height:.95;letter-spacing:-1.4px}.overs{font-size:clamp(11px,1.4vw,16px);font-weight:900;color:var(--gold)}.target{font-size:clamp(8px,1vw,11px);font-weight:800;color:#dbe7f5;white-space:nowrap}.target strong{color:var(--gold)}.center-bottom{display:flex;justify-content:space-between;gap:8px;font-size:clamp(8px,.9vw,10px);font-weight:800;color:var(--muted);white-space:nowrap}.center-bottom span{overflow:hidden;text-overflow:ellipsis}
+.bowling{background:linear-gradient(135deg,#0c1b2b,#172a40);border-left:1px solid var(--line);display:flex;flex-direction:column;justify-content:center;gap:5px}.bowler-name{font-size:clamp(13px,1.65vw,19px);font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bowler-figures{font-size:clamp(10px,1.2vw,14px);font-weight:900}.bowler-figures span{color:var(--gold)}.ball-row{display:flex;align-items:center;gap:4px;min-width:0;flex-wrap:nowrap}.ball{display:grid;place-items:center;min-width:clamp(17px,2vw,24px);height:clamp(17px,2vw,24px);padding:0 3px;border-radius:50%;background:#e9eef5;color:#142236;font-size:clamp(8px,.95vw,11px);font-weight:1000}.ball.wicket{background:var(--red);color:#fff}.ball.boundary{background:var(--gold);color:#111}.ball.extra{background:#2d7ec1;color:#fff}.ball-head{display:flex;align-items:center;justify-content:space-between;gap:6px}.over-label{font-size:clamp(8px,.9vw,10px);font-weight:900;color:var(--gold);text-transform:uppercase;white-space:nowrap}.state{position:fixed;left:2%;bottom:0;font-size:9px;color:#fff;background:#0008;padding:2px 5px;border-radius:3px;max-width:60%;opacity:.75}
+@media(max-width:700px){.topbar{top:1.8%;left:1%;right:16%;gap:5px}.brandmark{gap:5px;padding:5px 7px 5px 5px}.brandicon{width:27px;height:27px;font-size:18px}.venueclock{padding:5px 6px}.lower{left:1%;right:16%;bottom:2%;grid-template-columns:minmax(105px,.9fr) minmax(175px,1.5fr) minmax(105px,.9fr);min-height:86px;padding:0}.batters,.center,.bowling{padding:6px 7px;gap:4px}.score{font-size:clamp(23px,5vw,35px)}.teams{gap:4px}.vs{font-size:7px;padding:2px 3px}.section-label{letter-spacing:.5px}.player-name{font-size:clamp(10px,1.7vw,14px)}.player-stat{font-size:clamp(10px,1.7vw,14px)}.player-sub{font-size:7px}.bowler-name{font-size:clamp(10px,1.7vw,14px)}.bowler-figures{font-size:10px}.center-bottom{font-size:7px}.ball{min-width:16px;height:16px;font-size:8px}}
+@media(max-width:460px){.topbar{right:18%;}.brandname{font-size:10px}.brandapp{font-size:6px}.venueclock{max-width:48%;}#venue{font-size:7px}#localDateTime{font-size:7px}.lower{left:.5%;right:18%;grid-template-columns:minmax(80px,.8fr) minmax(130px,1.35fr) minmax(82px,.8fr);min-height:75px}.batters,.center,.bowling{padding:5px 4px}.score{font-size:clamp(20px,5.5vw,28px)}.team{font-size:8px}.overs{font-size:9px}.target{font-size:7px}.bowler-figures{font-size:8px}.ball-row{gap:2px}.ball{min-width:13px;height:13px;font-size:7px}.center-bottom{gap:3px}.section-label{font-size:7px}.player-sub{font-size:6px}}
+@media(max-height:420px){.lower{max-height:27vh;min-height:75px;bottom:2%}.batters,.center,.bowling{padding-top:4px;padding-bottom:4px;gap:3px}}
+/* Top broadcast ident: kept small and away from the PRISM watermark zone. */
+.topbar{position:fixed;top:2.5%;left:1.3%;right:13%;display:flex;align-items:center;justify-content:space-between;gap:12px;pointer-events:none;text-shadow:0 1px 3px #000b;z-index:2}
+.brandmark{display:flex;align-items:center;gap:9px;min-width:0;background:linear-gradient(100deg,rgba(5,15,28,.82),rgba(5,15,28,.25));padding:7px 12px 7px 7px;border-left:3px solid var(--gold);border-radius:7px}
+.brandicon{display:grid;place-items:center;width:34px;height:34px;border-radius:7px;background:#eaf2fa;color:#142236;font-size:22px;flex-shrink:0}
+.brandname{font-size:clamp(12px,1.6vw,20px);font-weight:1000;letter-spacing:.8px;color:#fff;white-space:nowrap}
+.brandapp{font-size:clamp(7px,.8vw,10px);font-weight:800;letter-spacing:1px;color:var(--gold);margin-top:2px}
+.venueclock{text-align:right;background:rgba(5,15,28,.76);border-right:3px solid var(--gold);border-radius:6px;padding:6px 10px;max-width:50%;min-width:0}
+#venue{font-size:clamp(9px,1.15vw,14px);font-weight:950;letter-spacing:.7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#localDateTime{font-size:clamp(8px,.9vw,11px);font-weight:800;color:var(--gold);margin-top:3px;white-space:nowrap}
 </style>
 </head>
 <body>
-<div class="bar" role="status" aria-live="polite">
-  <div class="head"><div class="brand">JCL CRICKET LIVE • T20</div><div class="title" id="match">Connecting to match…</div></div>
-  <div class="grid">
-    <section class="panel"><div class="label" id="bat">Batting team</div><div class="score" id="score">0/0</div><div class="overs" id="overs">0.0 overs</div></section>
-    <section class="panel batters"><div class="label">Batters</div><div class="batter"><span class="name striker" id="striker">▶ Batter 1</span><span class="stats" id="strikerStats">0 (0)</span></div><div class="batter"><span class="name" id="nonStriker">Batter 2</span><span class="stats" id="nonStrikerStats">0 (0)</span></div></section>
-    <section class="panel"><div class="label">Bowler</div><div class="bowler" id="bowler">Bowler</div><div class="caption" id="innings">Innings 1</div></section>
-    <section class="panel right"><div class="label" id="bowl">Bowling team</div><div class="rr" id="rr">RR 0.00</div><div class="target" id="target"></div></section>
-  </div>
-  <div class="state" id="state">Connecting to live match…</div>
+<div class="topbar" aria-label="Match broadcast details">
+ <div class="brandmark"><div class="brandicon" aria-hidden="true">🏏</div><div><div class="brandname">JCL CRICKET LIVE</div><div class="brandapp">CRICKET SCORER BY JCL</div></div></div>
+ <div class="venueclock"><div id="venue">INDIA · PUNJAB</div><div id="localDateTime">10 OCT 2026 · 3:30 PM</div></div>
 </div>
+<div class="lower" role="status" aria-live="polite">
+ <section class="batters">
+  <div class="section-label">Batters</div>
+  <div class="player"><div class="player-name active" id="striker">Batter 1</div><div class="player-stat" id="strikerStats">0 (0)</div><div class="player-sub" id="strikerExtras">4s 0 · 6s 0</div></div>
+  <div class="player"><div class="player-name" id="nonStriker">Batter 2</div><div class="player-stat" id="nonStrikerStats">0 (0)</div><div class="player-sub" id="nonStrikerExtras">4s 0 · 6s 0</div></div>
+ </section>
+ <section class="center">
+  <div class="teams"><div class="team left" id="leftTeam">TEAM B</div><div class="vs">VS</div><div class="team right" id="rightTeam">TEAM A</div></div>
+  <div class="scoreline"><div class="score" id="score">0/0</div><div class="overs" id="overs">0.0 OV</div></div>
+  <div class="target" id="target">INNINGS 1 · <strong>RR 0.00</strong></div>
+  <div class="center-bottom"><span id="matchTitle">JCL CRICKET LIVE</span><span id="inningsInfo">T20 · LIVE</span></div>
+ </section>
+ <section class="bowling">
+  <div class="ball-head"><div class="section-label">Bowler</div><div class="over-label" id="overLabel">OVER 1</div></div>
+  <div class="bowler-name" id="bowler">Bowler</div>
+  <div class="bowler-figures" id="bowlerFigures">0-0 · 0.0 OV</div>
+  <div class="ball-row" id="ballRow"><span class="ball">—</span></div>
+ </section>
+</div>
+<div class="state" id="state">Connecting to live score…</div>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-const firebaseConfig = {
- apiKey:"AIzaSyDta_AAwNpU-9OAWtVgYGhB-GmGaZZFLsI",
- authDomain:"jcl-cricket-scorer.firebaseapp.com",
- projectId:"jcl-cricket-scorer",
- storageBucket:"jcl-cricket-scorer.firebasestorage.app",
- messagingSenderId:"112116011790",
- appId:"1:112116011790:web:d6d2a4ca7416dce53efd5f",
- measurementId:"G-DFJ3V8ZCV8"
-};
-const $=id=>document.getElementById(id);
-const matchId=new URLSearchParams(location.search).get("match");
-async function startOverlay(){
- if(!matchId){$("state").textContent="No Match Code in link. Open the link copied from JCL Scorer.";$("match").textContent="JCL live scoreboard";return;}
- try{
-  const app=initializeApp(firebaseConfig);
-  const db=getFirestore(app);
-  onSnapshot(doc(db,"PublicMatches",matchId),snap=>{
-   if(!snap.exists()){$("state").textContent="Waiting for scorer to publish this match…";return;}
-   const d=snap.data();
-   $("bat").textContent=d.BattingTeam||d.TeamA||"Batting";
-   $("bowl").textContent=d.BowlingTeam||d.TeamB||"Bowling";
-   $("score").textContent=`${d.Runs??0}/${d.Wickets??0}`;
-   $("overs").textContent=`${d.Overs||"0.0"} overs`;
-   $("match").textContent=d.Title||"JCL Match";
-   $("innings").textContent=`Innings ${d.InningsNo||1}`;
-   $("striker").textContent=`▶ ${d.Striker||"Batter 1"}`;
-   $("nonStriker").textContent=d.NonStriker||"Batter 2";
-   $("strikerStats").textContent=`${d.StrikerRuns??0} (${d.StrikerBalls??0})`;
-   $("nonStrikerStats").textContent=`${d.NonStrikerRuns??0} (${d.NonStrikerBalls??0})`;
-   $("bowler").textContent=d.Bowler||"Bowler";
-   $("rr").textContent=`RR ${Number(d.RunRate||0).toFixed(2)}`;
-   $("target").textContent=d.Target?`TARGET ${d.Target}`:"";
-   $("state").textContent=d.Status==="completed"||d.Status==="innings-complete"?"MATCH / INNINGS COMPLETED":`LIVE • ${matchId}`;
-  },err=>{$("state").textContent=`Cannot read score: ${err.code||err.message}`;console.error(err);});
- }catch(e){$("state").textContent=`Sign-in/connection failed: ${e.code||e.message}`;console.error(e);}
+const firebaseConfig={apiKey:"AIzaSyDta_AAwNpU-9OAWtVgYGhB-GmGaZZFLsI",authDomain:"jcl-cricket-scorer.firebaseapp.com",projectId:"jcl-cricket-scorer",storageBucket:"jcl-cricket-scorer.firebasestorage.app",messagingSenderId:"112116011790",appId:"1:112116011790:web:d6d2a4ca7416dce53efd5f",measurementId:"G-DFJ3V8ZCV8"};
+const $=id=>document.getElementById(id);const matchId=new URLSearchParams(location.search).get("match");
+const safe=(v,fallback="—")=>v===undefined||v===null||v===""?fallback:String(v);
+function ballClass(label){const s=String(label||"").toUpperCase();if(s==="W"||s.includes("WICKET"))return"wicket";if(s==="4"||s==="6"||s.includes("4")||s.includes("6"))return"boundary";if(/WD|NB|B|LB|PEN/.test(s))return"extra";return""}
+function render(d){
+ const batting=safe(d.BattingTeam,d.TeamA||"Batting"),bowling=safe(d.BowlingTeam,d.TeamB||"Bowling");
+ // Broadcast layout: the non-batting/opposition team left; active batting team right.
+ $("leftTeam").textContent=bowling.toUpperCase();$("rightTeam").textContent=batting.toUpperCase();
+ $("score").textContent=`${d.Runs??0}/${d.Wickets??0}`;$("overs").textContent=`${safe(d.Overs,"0.0")} OV`;
+ const target=Number(d.Target)>0?`TARGET ${d.Target} · NEED ${Math.max(0,Number(d.Target)-(Number(d.Runs)||0))}`:`INNINGS ${d.InningsNo||1}`;
+ $("target").innerHTML=`${target} · <strong>RR ${Number(d.RunRate||0).toFixed(2)}</strong>`;
+ $("striker").textContent=safe(d.Striker,"Batter 1");$("nonStriker").textContent=safe(d.NonStriker,"Batter 2");
+ $("strikerStats").textContent=`${d.StrikerRuns??0} (${d.StrikerBalls??0})`;$("nonStrikerStats").textContent=`${d.NonStrikerRuns??0} (${d.NonStrikerBalls??0})`;
+ $("strikerExtras").textContent=`4s ${d.StrikerFours??0} · 6s ${d.StrikerSixes??0}`;$("nonStrikerExtras").textContent=`4s ${d.NonStrikerFours??0} · 6s ${d.NonStrikerSixes??0}`;
+ $("bowler").textContent=safe(d.Bowler,"Bowler");const legal=Number(d.BowlerLegal)||0;const bo=`${Math.floor(legal/6)}.${legal%6}`;
+ $("bowlerFigures").textContent=`${d.BowlerWickets??0}-${d.BowlerRuns??0} · ${bo} OV`;
+ $("overLabel").textContent=`OVER ${d.CurrentOverNo||Math.floor((Number(d.LegalBalls)||0)/6)+1}`;
+ const balls=Array.isArray(d.CurrentOverBalls)?d.CurrentOverBalls:[];const row=$("ballRow");row.innerHTML="";
+ if(!balls.length){row.innerHTML='<span class="ball">—</span>';}else{balls.slice(-6).forEach(b=>{const el=document.createElement("span");el.className=`ball ${ballClass(b.label)}`;el.textContent=safe(b.label,"·");el.title=`Ball ${b.ball||""}: ${b.runs||0} run(s)`;row.appendChild(el);});}
+ const loc=[d.MatchCountry||"India",d.MatchState||"" ,d.MatchCity||""].filter(Boolean).join(" · ").toUpperCase();
+ $("venue").textContent=loc;
+ $("matchTitle").textContent="JCL CRICKET LIVE";$("inningsInfo").textContent=`${safe(d.Title,"LIVE MATCH").toUpperCase()} · ${d.MaxOvers||20} OVERS · ${d.Status==="completed"?"COMPLETED":"LIVE"}`;
+ updateClock();
+ $("state").textContent=d.Status==="completed"||d.Status==="innings-complete"?"MATCH / INNINGS COMPLETED":"LIVE SCORE CONNECTED";
 }
-startOverlay();
+function updateClock(){const now=new Date();const date=now.toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"}).toUpperCase();const time=now.toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit",hour12:true});$("localDateTime").textContent=`${date} · ${time}`;}
+updateClock();setInterval(updateClock,30000);
+if(!matchId){$("state").textContent="Open the overlay link copied from JCL Scorer.";}else{try{const app=initializeApp(firebaseConfig);const db=getFirestore(app);onSnapshot(doc(db,"PublicMatches",matchId),snap=>{if(!snap.exists()){$("state").textContent="Waiting for the scorer to publish this match…";return;}render(snap.data());},err=>{$("state").textContent=`Score connection error: ${err.code||err.message}`;console.error(err);});}catch(e){$("state").textContent=`Connection error: ${e.code||e.message}`;console.error(e);}}
 </script>
 </body>
 </html>

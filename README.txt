@@ -1,19 +1,27 @@
-JCL Cricket Scorer + Firebase Overlay prototype
+JCL Cricket Scorer — Secure Spark Build
 
-Files:
-- index_firebase.html: scorer app; after toss it generates a Match Code and Overlay Link, then allows player selection.
-- overlay_firebase.html: read-only live scoreboard for PRISM/browser overlay.
-- firestore.rules: rules for public read-only overlay and owner-only writes.
+Files
+- index.html: scorer app; private match state is owner-only and public scoreboard data is published separately.
+- overlay.html: reads only PublicMatches, which contains scoreboard fields only.
+- firestore.rules: owner-only private match rules and public read-only scoreboard rules.
 
-Before testing:
-1. In Firebase Console > Authentication > Sign-in method, enable Anonymous.
-2. In Firestore Database > Rules, publish firestore.rules.
-3. Host both HTML files on the same HTTPS Firebase Hosting site. Rename index_firebase.html to index.html and overlay_firebase.html to overlay.html when uploading/deploying.
-4. Open the hosted index.html, start a match, confirm toss. Copy the generated link, then continue to select the opening batsmen and bowler.
-5. Add the link as a browser/web overlay in PRISM Live Studio. Score updates should appear in realtime.
+Important behavior change
+- Five-digit Umpire Code resume is removed. To resume a match on another device, sign in with the SAME Google account that created the match.
+- Anyone with the overlay link can view the public score, but cannot read FullState through the public scoreboard document.
+- This build is prepared for Firebase Spark; no Cloud Functions are required.
 
-Important:
-- The Firestore collection name is case-sensitive. This version writes to `Matches` (capital M), matching the user's existing database.
-- The match code is a secret-style link identifier. Anyone with the overlay link can view that match's public score. Do not put private information in these fields.
-- Firebase client config is intended for browser apps; never place service-account private keys in HTML.
-- This is a prototype. Test with a dummy match before using it for a real broadcast.
+Before publishing
+1. Keep a backup of the current GitHub index.html, overlay.html, and current Firestore Rules.
+2. In the GitHub repository, replace index.html and overlay.html with the two files from this package. Commit the changes.
+3. In Firebase Console > Firestore Database > Rules, replace the rules with firestore.rules and click Publish.
+4. Reload the app. Sign in with Google, create a test match, enter the opening players, and confirm the match starts.
+5. Open the copied overlay link in a private/incognito tab. Confirm the score appears and updates when you add runs.
+6. Test Match History and resume on a second device/browser signed into the SAME Google account.
+7. Test All Live Matches: it should show public score and open the overlay, not allow resuming another person's match.
+
+Migration note
+Existing private Matches documents remain private after the new rules are published. Existing old matches may not appear in PublicMatches until opened by their owner in the updated scorer and synced. Never loosen the private Matches read rule to fix an overlay error; check that the updated overlay reads PublicMatches instead.
+
+Validation performed
+- JavaScript syntax checks passed for the script blocks in index.html and overlay.html.
+- Firebase Rules were prepared but not deployed or emulator-tested. Test on a temporary/test match before relying on this during a live game.

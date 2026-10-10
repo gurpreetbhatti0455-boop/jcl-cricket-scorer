@@ -271,10 +271,9 @@ body.home-mode>header,body.home-mode>main,body.home-mode>footer{display:none!imp
 <div id="overlayLinkBackdrop" class="run-popup-backdrop hidden" role="dialog" aria-modal="true">
  <div class="run-popup" style="max-width:440px">
   <h2>Live Overlay Link Ready</h2>
-  <p>Copy this link for PRISM Live. Copy the five-digit Umpire Code. Share it only with the person who should resume scoring.</p>
+  <p>Copy this link for PRISM Live. To resume scoring on another device, sign in with the same Google account that created this match.</p>
   <label for="overlayLinkValue">Overlay Link</label><input id="overlayLinkValue" readonly value="" style="font-size:12px">
-  <label for="overlayCodeValue">Five-digit Umpire Code</label><input id="overlayCodeValue" readonly value="" style="font-weight:800;letter-spacing:3px;font-size:20px">
-  <button id="copyOverlayLinkBtn" class="btn green run-popup-cancel">Copy Overlay Link</button><button id="copyUmpireCodeBtn" class="btn run-popup-cancel">Copy Umpire Code</button>
+  <button id="copyOverlayLinkBtn" class="btn green run-popup-cancel">Copy Overlay Link</button>
   <button id="continueToPlayersBtn" class="btn run-popup-cancel">Continue: Select Batsmen & Bowler</button>
  </div>
 </div>
@@ -339,7 +338,7 @@ body.home-mode>header,body.home-mode>main,body.home-mode>footer{display:none!imp
 <script>
 const $=id=>document.getElementById(id);
 let lang="en", undoStack=[], manualTarget=null, widePending=false;
-let jclMatchId="", jclOverlayUrl="", jclAccessCode="";
+let jclMatchId="", jclOverlayUrl="";
 const words={
 en:{setupTitle:"Match setup",labA:"Team A (first batting)",labB:"Team B",labOvers:"Overs per innings",labMatch:"Match / tournament",labStriker:"Opening striker",labNon:"Non-striker",labBowler:"Opening bowler",labToss:"Toss note (optional)",startBtn:"Start new match",saveSetup:"Update names / details",overlayMode:"Overlay-only preview",inningsLabel:"INNINGS",batHeading:"Runs off the bat",extrasHeading:"Extras & special events",wicketBtn:"WICKET",controlHeading:"Ball controls",labNextBowler:"Next/current bowler",labNewBatter:"New batter after wicket",changeEnds:"Swap striker / ends",endOver:"End over / change bowler",nextInnings:"Start next innings",battersHeading:"Batters",bowlerHeading:"Bowling",extrasStatsHeading:"Innings extras",inningsHeading:"Innings summary",overlayHeading:"Broadcast scoreboard preview",exportBtn:"Export match JSON",importBtn:"Import match JSON",copyBtn:"Copy score text",undoBtn:"UNDO ↶",ready:"Ready. Set up your match.",runs:"Runs off the bat",wicket:"Wicket",wide:"Wide",noBall:"No-ball",bye:"Bye",legBye:"Leg-bye",penalty:"Penalty",retired:"Retired hurt",striker:"Striker",nonStriker:"Non-striker",out:"OUT",notOut:"not out",target:"Target",innings:"Innings",overs:"overs",legal:"legal balls",rr:"RR",extras:"Extras",summaryEmpty:"No innings completed yet.",overlayNote:"Preview is local to this browser. To show it inside PRISM as a live web source, the app and overlay must be hosted online and connected to a realtime database.",wideHelp:"Wide workflow: tap WIDE, then tap 0/1/2/3/4/5/6 for completed runs. A wide is not a legal ball; completed odd runs change the strike.",moreTitle:"More scoring options",morePenalty:"Penalty runs",moreTarget:"Set target",moreOverthrow:"Overthrow / completed runs",moreClose:"Close"},
 pa:{setupTitle:"ਮੈਚ ਸੈਟਅੱਪ",labA:"ਟੀਮ A (ਪਹਿਲਾਂ ਬੱਲੇਬਾਜ਼ੀ)",labB:"ਟੀਮ B",labOvers:"ਹਰ ਪਾਰੀ ਦੇ ਓਵਰ",labMatch:"ਮੈਚ / ਟੂਰਨਾਮੈਂਟ",labStriker:"ਸ਼ੁਰੂਆਤੀ ਸਟ੍ਰਾਈਕਰ",labNon:"ਨਾਨ-ਸਟ੍ਰਾਈਕਰ",labBowler:"ਸ਼ੁਰੂਆਤੀ ਗੇਂਦਬਾਜ਼",labToss:"ਟਾਸ ਨੋਟ (ਚੋਣਵਾਂ)",startBtn:"ਨਵਾਂ ਮੈਚ ਸ਼ੁਰੂ ਕਰੋ",saveSetup:"ਨਾਮ / ਵੇਰਵੇ ਅੱਪਡੇਟ",overlayMode:"ਸਿਰਫ਼ ਓਵਰਲੇ ਪ੍ਰੀਵਿਊ",inningsLabel:"ਪਾਰੀ",batHeading:"ਬੱਲੇ ਨਾਲ ਬਣੇ ਰਨ",extrasHeading:"ਵਾਧੂ ਰਨ ਅਤੇ ਹੋਰ",wicketBtn:"ਵਿਕਟ",controlHeading:"ਗੇਂਦ ਕੰਟਰੋਲ",labNextBowler:"ਮੌਜੂਦਾ / ਅਗਲਾ ਗੇਂਦਬਾਜ਼",labNewBatter:"ਵਿਕਟ ਤੋਂ ਬਾਅਦ ਨਵਾਂ ਬੱਲੇਬਾਜ਼",changeEnds:"ਸਟ੍ਰਾਈਕਰ / ਸਿਰੇ ਬਦਲੋ",endOver:"ਓਵਰ ਖਤਮ / ਗੇਂਦਬਾਜ਼ ਬਦਲੋ",nextInnings:"ਅਗਲੀ ਪਾਰੀ ਸ਼ੁਰੂ ਕਰੋ",battersHeading:"ਬੱਲੇਬਾਜ਼",bowlerHeading:"ਗੇਂਦਬਾਜ਼ੀ",extrasStatsHeading:"ਪਾਰੀ ਦੇ ਵਾਧੂ ਰਨ",inningsHeading:"ਪਾਰੀ ਦਾ ਸਾਰ",overlayHeading:"ਲਾਈਵ ਪ੍ਰਸਾਰਣ ਸਕੋਰਬੋਰਡ",exportBtn:"ਮੈਚ JSON ਐਕਸਪੋਰਟ",importBtn:"ਮੈਚ JSON ਇੰਪੋਰਟ",copyBtn:"ਸਕੋਰ ਕਾਪੀ ਕਰੋ",undoBtn:"ਵਾਪਸ ↶",ready:"ਤਿਆਰ। ਮੈਚ ਸੈੱਟ ਕਰੋ।",runs:"ਬੱਲੇ ਨਾਲ ਬਣੇ ਰਨ",wicket:"ਵਿਕਟ",wide:"ਵਾਈਡ",noBall:"ਨੋ-ਬਾਲ",bye:"ਬਾਈ",legBye:"ਲੈਗ-ਬਾਈ",penalty:"ਪੈਨਲਟੀ",retired:"ਰਿਟਾਇਰਡ ਹਰਟ",striker:"ਸਟ੍ਰਾਈਕਰ",nonStriker:"ਨਾਨ-ਸਟ੍ਰਾਈਕਰ",out:"ਆਊਟ",notOut:"ਨਾਟ ਆਊਟ",target:"ਟੀਚਾ",innings:"ਪਾਰੀ",overs:"ਓਵਰ",legal:"ਕਾਨੂੰਨੀ ਗੇਂਦਾਂ",rr:"ਰਨ ਰੇਟ",extras:"ਵਾਧੂ ਰਨ",summaryEmpty:"ਹਾਲੇ ਕੋਈ ਪਾਰੀ ਪੂਰੀ ਨਹੀਂ ਹੋਈ।",overlayNote:"ਇਹ ਪ੍ਰੀਵਿਊ ਇਸ ਬ੍ਰਾਊਜ਼ਰ ਤੱਕ ਸੀਮਿਤ ਹੈ। PRISM ਵਿੱਚ ਲਾਈਵ ਵੈੱਬ ਸਰੋਤ ਵਜੋਂ ਦਿਖਾਉਣ ਲਈ ਐਪ ਅਤੇ ਓਵਰਲੇ ਨੂੰ ਆਨਲਾਈਨ ਹੋਸਟ ਕਰਕੇ ਰੀਅਲ-ਟਾਈਮ ਡਾਟਾਬੇਸ ਨਾਲ ਜੋੜਨਾ ਪਵੇਗਾ.",moreTitle:"ਹੋਰ ਸਕੋਰਿੰਗ ਵਿਕਲਪ",morePenalty:"ਪੈਨਲਟੀ ਰਨ",moreTarget:"ਟੀਚਾ ਸੈੱਟ ਕਰੋ",moreOverthrow:"ਓਵਰਥ੍ਰੋ / ਪੂਰੇ ਕੀਤੇ ਰਨ",moreClose:"ਬੰਦ ਕਰੋ"}
@@ -564,11 +563,11 @@ async function confirmTossAndStart(){
  $("tossBackdrop").classList.add("hidden");
  $("openingBattingTeam").textContent=`${state.teams[state.current.batting]} will bat first. Enter both batters and the opening bowler.`;
  $("openingStriker").value="";$("openingNonStriker").value="";$("openingBowler").value="";
- // Create a stable Firestore document ID and atomically reserve a unique five-digit Umpire Code.
- jclMatchId="jcl-"+Array.from(crypto.getRandomValues(new Uint8Array(5))).map(x=>x.toString(16).padStart(2,"0")).join("");
- try { jclAccessCode = await window.__JCL_allocateAccessCode(jclMatchId); } catch(e) { alert("Could not reserve a unique Umpire Code. Please check your connection and try again. " + (e.message||"")); $("tossBackdrop").classList.remove("hidden"); return; }
+ // Create a random, hard-to-guess match document ID. Resume permission is enforced by Firebase owner rules.
+ jclMatchId="jcl-"+Array.from(crypto.getRandomValues(new Uint8Array(16))).map(x=>x.toString(16).padStart(2,"0")).join("");
+ window.__JCL_createdAtMs=Date.now();
  const overlayUrl=new URL("overlay.html",window.location.href);overlayUrl.searchParams.set("match",jclMatchId);jclOverlayUrl=overlayUrl.href;
- $("overlayLinkValue").value=jclOverlayUrl;$("overlayCodeValue").value=jclAccessCode;
+ $("overlayLinkValue").value=jclOverlayUrl;
  $("overlayLinkBackdrop").classList.remove("hidden");
  render();
 }
@@ -585,7 +584,6 @@ $("copyOverlayLinkBtn").onclick=async()=>{
  try{await navigator.clipboard.writeText(jclOverlayUrl);$("copyOverlayLinkBtn").textContent="Copied!";}
  catch(e){$("overlayLinkValue").focus();$("overlayLinkValue").select();try{document.execCommand("copy");$("copyOverlayLinkBtn").textContent="Copied!";}catch(_){alert("Please copy the link manually.");}}
 };
-$("copyUmpireCodeBtn").onclick=async()=>{try{await navigator.clipboard.writeText(jclAccessCode);$("copyUmpireCodeBtn").textContent="Code Copied!";}catch(e){$("overlayCodeValue").select();document.execCommand("copy");}};
 $("continueToPlayersBtn").onclick=()=>{$("overlayLinkBackdrop").classList.add("hidden");$("openingPlayersBackdrop").classList.remove("hidden");};
 $("cancelOpeningPlayers").onclick=()=>$("openingPlayersBackdrop").classList.add("hidden");
 $("confirmSecondInnings").onclick=confirmSecondInningsSetup;$("cancelSecondInnings").onclick=()=>$("inningsSetupBackdrop").classList.add("hidden");
@@ -866,11 +864,11 @@ window.__JCL_getFirebasePayload=()=>{
  const c=state.current||{}, battingIndex=Number(c.batting)||0, batting=state.teams[battingIndex]||"Team A", bowling=state.teams[1-battingIndex]||"Team B";
  const legal=Number(c.legalBalls)||0, runs=Number(c.runs)||0, inn=state.inningsNo||1;
  const striker=(c.batters||[])[c.striker]||{}, non=(c.batters||[])[c.nonStriker]||{};
- return {MatchCode:jclMatchId,AccessCode:jclAccessCode,Title:state.matchName||"JCL Match",Status:state.status||"live",CreatedAtMs:window.__JCL_createdAtMs||Date.now(),FullState:state,TeamA:state.teams[0]||"Team A",TeamB:state.teams[1]||"Team B",Runs:runs,Wickets:Number(c.wickets)||0,LegalBalls:legal,BattingTeam:batting,BowlingTeam:bowling,Overs:`${Math.floor(legal/6)}.${legal%6}`,RunRate:legal?Number((runs/(legal/6)).toFixed(2)):0,Target:manualTarget||null,InningsNo:inn,Striker:striker.name||"",StrikerRuns:Number(striker.runs)||0,StrikerBalls:Number(striker.balls)||0,NonStriker:non.name||"",NonStrikerRuns:Number(non.runs)||0,NonStrikerBalls:Number(non.balls)||0,Bowler:c.bowler||"",Toss:state.toss||"",MaxOvers:state.maxOvers||20};
+ return {MatchCode:jclMatchId,Title:state.matchName||"JCL Match",Status:state.status||"live",CreatedAtMs:window.__JCL_createdAtMs||Date.now(),FullState:state,TeamA:state.teams[0]||"Team A",TeamB:state.teams[1]||"Team B",Runs:runs,Wickets:Number(c.wickets)||0,LegalBalls:legal,BattingTeam:batting,BowlingTeam:bowling,Overs:`${Math.floor(legal/6)}.${legal%6}`,RunRate:legal?Number((runs/(legal/6)).toFixed(2)):0,Target:manualTarget||null,InningsNo:inn,Striker:striker.name||"",StrikerRuns:Number(striker.runs)||0,StrikerBalls:Number(striker.balls)||0,NonStriker:non.name||"",NonStrikerRuns:Number(non.runs)||0,NonStrikerBalls:Number(non.balls)||0,Bowler:c.bowler||"",Toss:state.toss||"",MaxOvers:state.maxOvers||20};
 };
-window.__JCL_restoreState=(saved,docId,accessCode)=>{
+window.__JCL_restoreState=(saved,docId)=>{
  if(!saved||!saved.current)throw new Error("This match does not contain a restorable saved state.");
- state=saved; jclMatchId=docId; jclAccessCode=accessCode||""; undoStack=[]; widePending=false; pendingBowlerSelection=false;
+ state=saved; jclMatchId=docId; undoStack=[]; widePending=false; pendingBowlerSelection=false;
  $("teamA").value=state.teams?.[0]||"Team 1"; $("teamB").value=state.teams?.[1]||"Team 2"; $("matchName").value=state.matchName||"JCL Match";
  $("maxOvers").value=String(state.maxOvers||20); $("currentBowler").value=state.current.bowler||"Bowler 1";
  const overlayUrl=new URL("overlay.html",window.location.href);overlayUrl.searchParams.set("match",jclMatchId);jclOverlayUrl=overlayUrl.href;
@@ -884,64 +882,62 @@ render();
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc, getDocs, collection, query, where, orderBy, limit, serverTimestamp, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, getDocs, collection, query, where, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 const firebaseConfig={apiKey:"AIzaSyDta_AAwNpU-9OAWtVgYGhB-GmGaZZFLsI",authDomain:"jcl-cricket-scorer.firebaseapp.com",projectId:"jcl-cricket-scorer",storageBucket:"jcl-cricket-scorer.firebasestorage.app",messagingSenderId:"112116011790",appId:"1:112116011790:web:d6d2a4ca7416dce53efd5f",measurementId:"G-DFJ3V8ZCV8"};
 const app=initializeApp(firebaseConfig),db=getFirestore(app),auth=getAuth(app),provider=new GoogleAuthProvider();
 let currentUser=null,lastJson="",busy=false,queued=false;
 const $=id=>document.getElementById(id);
 const waitAuth=new Promise(resolve=>onAuthStateChanged(auth,u=>{currentUser=u;window.__JCL_user=u;if(u){document.body.classList.add("home-mode");$("googleSignInArea").classList.add("hidden");$("homeActions").classList.remove("hidden");$("signedInLabel").textContent="Signed in: "+(u.displayName||u.email||"Google account");}else{document.body.classList.add("home-mode");$("googleSignInArea").classList.remove("hidden");$("homeActions").classList.add("hidden");}resolve(u);}));
-// Process the return from Google's mobile-friendly redirect sign-in flow.
-try{await getRedirectResult(auth);}catch(e){console.error("Google redirect sign-in error",e);$("homeStatus").textContent="Google sign-in failed: "+(e.code||e.message)+". Check Firebase Authorized domains.";}
-$("googleSignInBtn").onclick=async()=>{try{$("homeStatus").textContent="Opening Google sign-in…";provider.setCustomParameters({prompt:"select_account"});await signInWithRedirect(auth,provider);}catch(e){$("homeStatus").textContent="Google sign-in failed: "+(e.code||e.message)+". Check Firebase Authentication settings.";}};
-$("signOutBtn").onclick=async()=>{try{await signOut(auth);showHome();}catch(e){alert(e.message)}};
-window.__JCL_allocateAccessCode=async(matchId)=>{
- await waitAuth;if(!currentUser)throw new Error("Sign in with Google first.");
- const now=Date.now(),week=7*24*60*60*1000;
- for(let attempt=0;attempt<150;attempt++){
-  const code=String(10000+Math.floor(Math.random()*90000)); const reservationRef=doc(db,"AccessCodes",code);
-  const ok=await runTransaction(db,async tx=>{
-   const r=await tx.get(reservationRef);
-   if(r.exists()){
-    const d=r.data();const reservedAt=Number(d.reservedAtMs||0);
-    if(now-reservedAt<week)return false;
-    if(d.matchId){const old=await tx.get(doc(db,"Matches",d.matchId));if(old.exists()&&old.data().Status==="live")return false;}
-   }
-   tx.set(reservationRef,{code,matchId,reservedAtMs:now,OwnerUid:currentUser.uid});return true;
-  });
-  if(ok){window.__JCL_createdAtMs=now;return code;}
- }
- throw new Error("Could not find an available code. Try again.");
+// Use popup sign-in on GitHub Pages to avoid redirect-storage issues on mobile browsers.
+$("googleSignInBtn").onclick=async()=>{
+  const btn=$("googleSignInBtn");
+  try{
+    btn.disabled=true;
+    $("homeStatus").textContent="Opening Google sign-in…";
+    provider.setCustomParameters({prompt:"select_account"});
+    const result=await signInWithPopup(auth,provider);
+    currentUser=result.user;
+    window.__JCL_user=currentUser;
+    $("googleSignInArea").classList.add("hidden");
+    $("homeActions").classList.remove("hidden");
+    $("signedInLabel").textContent="Signed in: "+(currentUser.displayName||currentUser.email||"Google account");
+    $("homeStatus").textContent="";
+  }catch(e){
+    console.error("Google popup sign-in error",e);
+    $("homeStatus").textContent="Google sign-in failed: "+(e.code||e.message)+". If a popup was blocked, allow pop-ups for this site and try again.";
+  }finally{btn.disabled=false;}
 };
+$("signOutBtn").onclick=async()=>{try{await signOut(auth);showHome();}catch(e){alert(e.message)}};
 window.__JCL_publishFirebase=async()=>{
  await waitAuth;const p=window.__JCL_getFirebasePayload?.();if(!p||!p.MatchCode||!currentUser)return;
- const payload={...p,OwnerUid:currentUser.uid,OwnerEmail:currentUser.email||"",CreatedAtMs:window.__JCL_createdAtMs||Date.now(),UpdatedAt:serverTimestamp()};
- const comparable=JSON.stringify({...payload,UpdatedAt:null});if(comparable===lastJson||busy){if(busy)queued=true;return;}lastJson=comparable;busy=true;
- try{await setDoc(doc(db,"Matches",p.MatchCode),payload,{merge:true});}
+ const privatePayload={...p,OwnerUid:currentUser.uid,OwnerEmail:currentUser.email||"",CreatedAtMs:window.__JCL_createdAtMs||Date.now(),UpdatedAt:serverTimestamp()};
+ const publicPayload={MatchCode:p.MatchCode,Title:p.Title,Status:p.Status,CreatedAtMs:privatePayload.CreatedAtMs,UpdatedAt:serverTimestamp(),TeamA:p.TeamA,TeamB:p.TeamB,Runs:p.Runs,Wickets:p.Wickets,LegalBalls:p.LegalBalls,BattingTeam:p.BattingTeam,BowlingTeam:p.BowlingTeam,Overs:p.Overs,RunRate:p.RunRate,Target:p.Target,InningsNo:p.InningsNo,Striker:p.Striker,StrikerRuns:p.StrikerRuns,StrikerBalls:p.StrikerBalls,NonStriker:p.NonStriker,NonStrikerRuns:p.NonStrikerRuns,NonStrikerBalls:p.NonStrikerBalls,Bowler:p.Bowler,Toss:p.Toss,MaxOvers:p.MaxOvers};
+ const comparable=JSON.stringify({...privatePayload,UpdatedAt:null});if(comparable===lastJson||busy){if(busy)queued=true;return;}lastJson=comparable;busy=true;
+ try{await setDoc(doc(db,"Matches",p.MatchCode),privatePayload,{merge:true});await setDoc(doc(db,"PublicMatches",p.MatchCode),publicPayload,{merge:true});}
  catch(e){lastJson="";console.error("Firebase score sync failed",e);const st=$("status");if(st)st.textContent="Firebase sync error: "+e.message;}
  finally{busy=false;if(queued){queued=false;window.__JCL_publishFirebase();}}
 };
 window.__JCL_listMatches=async(mode)=>{
  await waitAuth;if(!currentUser)throw new Error("Please sign in with Google.");
  let snap;
- if(mode==="live") snap=await getDocs(query(collection(db,"Matches"),where("Status","==","live"),limit(100)));
+ if(mode==="live") snap=await getDocs(query(collection(db,"PublicMatches"),where("Status","==","live"),limit(100)));
  else snap=await getDocs(query(collection(db,"Matches"),where("OwnerUid","==",currentUser.uid),limit(100)));
  return snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.CreatedAtMs||0)-(a.CreatedAtMs||0));
 };
-window.__JCL_openRemoteMatch=async(id,mode)=>{
- await waitAuth;const snap=await getDoc(doc(db,"Matches",id));if(!snap.exists())throw new Error("Match not found.");const d=snap.data();
- if(mode==="history"&&d.OwnerUid!==currentUser.uid)throw new Error("This match belongs to another account.");
- const code=prompt("Enter the five-digit Umpire Code to resume scoring:");if(code===null)return;
- if(String(code).trim()!==String(d.AccessCode||"")){alert("Incorrect Umpire Code.");return;}
+window.__JCL_openRemoteMatch=async(id)=>{
+ await waitAuth;if(!currentUser)throw new Error("Please sign in with Google.");
+ const snap=await getDoc(doc(db,"Matches",id));if(!snap.exists())throw new Error("Match not found or you do not have permission to resume it.");const d=snap.data();
+ if(d.OwnerUid!==currentUser.uid)throw new Error("Only the Google account that created this match can resume scoring. Sign in with that same account on both devices.");
  if(!d.FullState){alert("This match has no saved state yet. Please open it on the original phone and allow it to sync first.");return;}
- window.__JCL_createdAtMs=d.CreatedAtMs||Date.now();window.__JCL_restoreState(d.FullState,id,d.AccessCode);showScorer();
+ window.__JCL_createdAtMs=d.CreatedAtMs||Date.now();window.__JCL_restoreState(d.FullState,id);showScorer();
 };
 function showHome(){document.body.classList.add("home-mode");document.body.classList.remove("match-live");$("jclHome").classList.remove("hidden");$("homePanel").classList.add("hidden");$("mainMenuBtn").classList.add("hidden");}
 function showScorer(){document.body.classList.remove("home-mode");$("jclHome").classList.add("hidden");$("homePanel").classList.add("hidden");$("mainMenuBtn").classList.remove("hidden");}
 window.__JCL_showHome=showHome;
 function showPanel(title,html){$("jclHome").classList.add("hidden");$("homePanel").classList.remove("hidden");$("homePanelTitle").textContent=title;$("homePanelContent").innerHTML=html;}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-async function listScreen(mode){try{const rows=await window.__JCL_listMatches(mode);showPanel(mode==="live"?"All Live Matches":"Match History",rows.length?rows.map(d=>`<div class="home-item"><strong>${esc(d.Title||d.TeamA+" vs "+d.TeamB||"JCL Match")}</strong><small>${esc(d.TeamA||"")} vs ${esc(d.TeamB||"")} • ${esc(d.Runs??0)}/${esc(d.Wickets??0)} • ${esc(d.Overs||"0.0")} overs<br>${esc(d.Status||"live")}</small><button class="btn green" data-open-match="${esc(d.id)}" data-mode="${mode}">${mode==="history"?"Open / Resume":"Umpire Mode / Resume"}</button>${mode==="history"?`<button class="btn" data-scoreboard="${esc(d.id)}">Open Scoreboard</button>`:""}</div>`).join(""):"<p>No matches found yet.</p>");$("homePanelContent").querySelectorAll("[data-open-match]").forEach(b=>b.onclick=()=>window.__JCL_openRemoteMatch(b.dataset.openMatch,b.dataset.mode).catch(e=>alert(e.message)));$("homePanelContent").querySelectorAll("[data-scoreboard]").forEach(b=>b.onclick=()=>{const id=b.dataset.scoreboard;location.href="overlay.html?match="+encodeURIComponent(id)});}catch(e){showPanel("Error",`<p>${esc(e.message)}</p>`);}}
+async function listScreen(mode){try{const rows=await window.__JCL_listMatches(mode);showPanel(mode==="live"?"All Live Matches":"Match History",rows.length?rows.map(d=>`<div class="home-item"><strong>${esc(d.Title||d.TeamA+" vs "+d.TeamB||"JCL Match")}</strong><small>${esc(d.TeamA||"")} vs ${esc(d.TeamB||"")} • ${esc(d.Runs??0)}/${esc(d.Wickets??0)} • ${esc(d.Overs||"0.0")} overs<br>${esc(d.Status||"live")}</small>${mode==="history"?`<button class="btn green" data-open-match="${esc(d.id)}">Open / Resume</button><button class="btn" data-scoreboard="${esc(d.id)}">Open Scoreboard</button>`:`<button class="btn green" data-scoreboard="${esc(d.id)}">View Live Score</button>`}</div>`).join(""):"<p>No matches found yet.</p>");$("homePanelContent").querySelectorAll("[data-open-match]").forEach(b=>b.onclick=()=>window.__JCL_openRemoteMatch(b.dataset.openMatch).catch(e=>alert(e.message)));$("homePanelContent").querySelectorAll("[data-scoreboard]").forEach(b=>b.onclick=()=>{const id=b.dataset.scoreboard;location.href="overlay.html?match="+encodeURIComponent(id)});}catch(e){showPanel("Error",`<p>${esc(e.message)}</p>`);}}
 $("homeNewMatch").onclick=()=>{showScorer();document.body.classList.remove("match-live");window.scrollTo(0,0);};$("returnHomeBtn").onclick=()=>showHome();
 $("homeAllLive").onclick=()=>listScreen("live");$("homeHistory").onclick=()=>listScreen("history");$("homeBack").onclick=()=>showHome();
 $("homePrism").onclick=()=>showPanel("How to Go Live (PRISM Guide)",`<div class="guide-step"><b>1.</b> Open JCL Cricket Scorer and start your match. Tap <b>Copy Overlay Link</b>.</div><div class="guide-step"><b>2.</b> Open PRISM Live Studio.</div><div class="guide-step"><b>3.</b> <b>Swipe left repeatedly</b> until the <b>Website</b> option appears, then tap <b>Website</b>.</div><div class="guide-step"><b>4.</b> Paste the copied overlay link and enter the title <b>JCL Live Score</b>.</div><div class="guide-step"><b>5.</b> Start the stream setup and tap the overlay title in the preview to display the scoreboard.</div><div class="guide-step"><b>6.</b> Switch to landscape, adjust the cricket video framing and scoreboard position, check the preview, then start the broadcast.</div>`);

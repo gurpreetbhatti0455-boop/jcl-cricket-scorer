@@ -1,15 +1,39 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function ownsMatch(matchId) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/Matches/$(matchId))
+        && get(/databases/$(database)/documents/Matches/$(matchId)).data.OwnerUid == request.auth.uid;
+    }
+
+    // Private scoring state: only its Google-account owner can access it.
     match /Matches/{matchId} {
-      // The overlay link contains a hard-to-guess match code; overlay needs read-only access.
-      allow read: if true;
-      // Scorer signs in anonymously. Only the creator UID can create/update its match.
-      allow create: if request.auth != null && request.resource.data.OwnerUid == request.auth.uid;
-      allow update: if request.auth != null
-                    && resource.data.OwnerUid == request.auth.uid
-                    && request.resource.data.OwnerUid == resource.data.OwnerUid;
+      allow read: if signedIn() && resource.data.OwnerUid == request.auth.uid;
+      allow create: if signedIn() && request.resource.data.OwnerUid == request.auth.uid;
+      allow update: if signedIn()
+        && resource.data.OwnerUid == request.auth.uid
+        && request.resource.data.OwnerUid == request.auth.uid;
       allow delete: if false;
+    }
+
+    // Public scoreboard only. No FullState, email, or umpire code is stored here.
+    match /PublicMatches/{matchId} {
+      allow read: if true;
+      allow create, update: if ownsMatch(matchId)
+        && request.resource.data.keys().hasOnly([
+          'MatchCode','Title','Status','CreatedAtMs','UpdatedAt','TeamA','TeamB',
+          'Runs','Wickets','LegalBalls','BattingTeam','BowlingTeam','Overs','RunRate',
+          'Target','InningsNo','Striker','StrikerRuns','StrikerBalls','NonStriker',
+          'NonStrikerRuns','NonStrikerBalls','Bowler','Toss','MaxOvers'
+        ]);
+      allow delete: if false;
+    }
+
+    // Legacy code reservations are intentionally inaccessible; the app no longer uses them.
+    match /AccessCodes/{code} {
+      allow read, write: if false;
     }
   }
 }

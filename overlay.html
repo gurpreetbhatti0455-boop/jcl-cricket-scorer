@@ -14,6 +14,19 @@
 .batters,.center,.bowling{min-width:0;padding:9px 12px}.batters{background:linear-gradient(135deg,#13283d,#0c1b2b);border-right:1px solid var(--line);display:flex;flex-direction:column;justify-content:center;gap:6px}.section-label{font-size:clamp(8px,1vw,11px);font-weight:900;letter-spacing:1.1px;color:var(--gold);text-transform:uppercase;margin-bottom:1px}.player{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px;align-items:center;min-width:0}.player-name{font-size:clamp(12px,1.55vw,18px);font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.player-name.active:before{content:'▶ ';color:var(--gold);font-size:.7em}.player-stat{text-align:right;white-space:nowrap;font-weight:900;font-size:clamp(12px,1.5vw,17px)}.player-sub{grid-column:1/-1;font-size:clamp(9px,1vw,11px);color:#f1d58a;margin-top:-4px;letter-spacing:.2px;font-weight:800}
 .center{display:flex;flex-direction:column;justify-content:center;gap:6px;background:linear-gradient(120deg,#152c43,#0d1b2c 70%);position:relative}.teams{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:center}.team{font-family:'Oswald',Inter,sans-serif;font-size:clamp(11px,1.45vw,17px);font-weight:900;letter-spacing:.7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:5px 12px;clip-path:polygon(5% 0,100% 0,95% 100%,0 100%);color:#fff!important;text-shadow:0 1px 2px #0006;border:1px solid #ffffff2b;box-shadow:inset 0 1px 0 #ffffff35,0 2px 6px #0004;text-transform:uppercase}.team.left{text-align:left;background:linear-gradient(135deg,#155da8,#0d3d75)}.team.right{text-align:right;background:linear-gradient(135deg,#ff525a,#bd1728)}.team.batting-team{background:linear-gradient(135deg,#ff525a,#bd1728)!important;border-color:#ff8a90}.team.opposition-team{background:linear-gradient(135deg,#237bc7,#124a87)!important;border-color:#6ab8ff}.vs{font-size:9px;font-weight:900;color:#fff;background:#0b1522;border:1px solid #ffffff38;padding:4px 6px;border-radius:4px;letter-spacing:.5px}.scoreline{display:flex;align-items:baseline;justify-content:center;gap:12px;white-space:nowrap}.score{font-family:'Oswald',Inter,sans-serif;font-size:clamp(34px,4.6vw,54px);font-weight:900;line-height:.9;letter-spacing:-.8px;color:#ff3947;text-shadow:0 2px 0 #640d17,0 0 15px #f52b4230}.overs{font-family:'Oswald',Inter,sans-serif;font-size:clamp(12px,1.5vw,18px);font-weight:900;color:#fff}.target{font-size:clamp(8px,1vw,11px);font-weight:800;color:#dbe7f5;white-space:nowrap}.target strong{color:var(--gold)}#chaseInfo{color:#fff;background:#ffffff0d;border-left:2px solid var(--gold);padding:3px 5px;border-radius:3px}#chaseInfo strong{color:var(--gold)}.center-bottom{display:flex;justify-content:space-between;gap:8px;font-size:clamp(8px,.9vw,10px);font-weight:800;color:var(--muted);white-space:nowrap}.center-bottom span{overflow:hidden;text-overflow:ellipsis}
 .bowling{background:linear-gradient(135deg,#0c1b2b,#172a40);border-left:1px solid var(--line);display:flex;flex-direction:column;justify-content:center;gap:5px}.bowler-name{font-size:clamp(13px,1.65vw,19px);font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bowler-figures{font-size:clamp(9px,1.05vw,12px);font-weight:900;line-height:1.35;white-space:normal}.bowler-figures span{color:var(--gold)}.ball-row{display:flex;align-items:center;gap:4px;min-width:0;flex-wrap:nowrap}.ball{display:grid;place-items:center;min-width:clamp(17px,2vw,24px);height:clamp(17px,2vw,24px);padding:0 3px;border-radius:50%;background:#e9eef5;color:#142236;font-size:clamp(8px,.95vw,11px);font-weight:1000}.ball.wicket{background:var(--red);color:#fff}.ball.boundary{background:var(--gold);color:#111}.ball.extra{background:#2d7ec1;color:#fff}.ball-head{display:flex;align-items:center;justify-content:space-between;gap:6px}.over-label{font-size:clamp(8px,.9vw,10px);font-weight:900;color:var(--gold);text-transform:uppercase;white-space:nowrap}.state{position:fixed;left:2%;bottom:0;font-size:9px;color:#fff;background:#0008;padding:2px 5px;border-radius:3px;max-width:60%;opacity:.75}
+.over-card{position:fixed;left:1.1%;right:13%;bottom:2.2%;z-index:24;padding:10px 14px;background:linear-gradient(115deg,rgba(5,15,28,.98),rgba(13,30,49,.98));border:2px solid #ffd166;clip-path:polygon(1.2% 0,100% 0,98.7% 100%,0 100%);box-shadow:0 8px 30px #000b;text-align:center;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .15s ease}.over-card.show{opacity:1;visibility:visible}.over-card .oc-title{font-size:clamp(10px,1.2vw,14px);font-weight:900;letter-spacing:2px;color:#ffd166}.over-card .oc-score{font-family:'Oswald',Inter,sans-serif;font-size:clamp(30px,4vw,48px);font-weight:700;line-height:1.05;color:#fff}.over-card .oc-meta{font-size:clamp(10px,1.1vw,13px);font-weight:800;color:#dbe7f5}.oc-table{width:100%;border-collapse:collapse;margin-top:5px;font-size:clamp(9px,1.1vw,13px);text-align:left}.oc-table th,.oc-table td{padding:4px 7px;border-bottom:1px solid #ffffff25}.oc-table th{color:#ffd166;font-size:.9em}.oc-table td:not(:first-child),.oc-table th:not(:first-child){text-align:center}.oc-table .oc-section td{background:#ffffff12;color:#ffd166;font-weight:900;letter-spacing:.7px}.oc-foot{margin-top:5px;font-size:clamp(9px,1vw,12px);color:#dbe7f5;font-weight:800}@media(max-width:700px){.over-card{left:1%;right:16%;bottom:2%;padding:6px 5px}.oc-table th,.oc-table td{padding:3px 2px;font-size:8px}}@media(max-width:460px){.over-card{left:.5%;right:18%;bottom:2%;padding:4px 3px}.oc-table th,.oc-table td{padding:2px 1px;font-size:6.5px}}
+
+/* Large boundary banner overlays the full lower-third scoreboard briefly. */
+.boundary-banner{position:fixed;left:1.1%;right:13%;bottom:2.2%;height:clamp(112px,24vh,190px);z-index:25;display:flex;align-items:center;justify-content:center;gap:clamp(12px,3vw,36px);background:linear-gradient(105deg,rgba(4,13,25,.94),rgba(12,29,48,.88));border:3px solid #ffd166;clip-path:polygon(1.2% 0,100% 0,98.7% 100%,0 100%);box-shadow:0 0 35px #ffd16655,0 5px 24px #000b;text-align:center;opacity:0;visibility:hidden;pointer-events:none;transform:scale(.96);transition:opacity .15s ease,transform .15s ease}
+.boundary-banner.show{opacity:1;visibility:visible;transform:scale(1)}
+.boundary-banner .boundary-word{font-family:'Oswald',Inter,sans-serif;font-size:clamp(64px,13vw,170px);font-weight:700;line-height:.9;letter-spacing:2px;color:#ffd166;text-shadow:0 3px 0 #8a4a00,0 0 22px #ffd166aa}
+.boundary-banner .boundary-sub{font-size:clamp(12px,2.1vw,24px);font-weight:900;letter-spacing:clamp(2px,.6vw,7px);color:#fff;text-transform:uppercase}
+.boundary-banner.six{border-color:#42c7ff;box-shadow:0 0 40px #42c7ff77,0 5px 24px #000b}
+.boundary-banner.six .boundary-word{color:#7ee1ff;text-shadow:0 3px 0 #07527c,0 0 28px #00aaffcc}
+.boundary-banner.wicket{border-color:#ff3947;box-shadow:0 0 40px #ff243c88,0 5px 24px #000b}.boundary-banner.wicket .boundary-word{color:#ff5965;text-shadow:0 3px 0 #7f1020,0 0 28px #ff243cbb}
+@media(max-width:700px){.boundary-banner{left:1%;right:16%;bottom:2%;height:clamp(86px,24vh,155px)}.boundary-banner .boundary-word{font-size:clamp(52px,14vw,110px)}.boundary-banner .boundary-sub{font-size:clamp(9px,2vw,16px)}}
+@media(max-width:460px){.boundary-banner{left:.5%;right:18%;bottom:2%;height:clamp(75px,23vh,125px)}.boundary-banner .boundary-word{font-size:clamp(42px,13vw,82px)}}
+
 /* Broadcast-style angled panels, inspired by modern sports score tickers. */
 .lower:before{content:"";position:absolute;left:0;top:0;width:5px;height:100%;background:linear-gradient(180deg,#ff4b55,#a90f24);z-index:3;pointer-events:none}
 .center:after{content:"";position:absolute;right:0;top:0;width:5px;height:100%;background:linear-gradient(180deg,#3997ed,#123d77);clip-path:polygon(35% 0,100% 0,100% 100%,0 100%);pointer-events:none}
@@ -59,6 +72,8 @@
   <div class="ball-row" id="ballRow"><span class="ball">—</span></div>
  </section>
 </div>
+<div class="boundary-banner" id="boundaryBanner" aria-hidden="true"><span class="boundary-word" id="boundaryWord">FOUR</span><span class="boundary-sub" id="boundarySub">BOUNDARY!</span></div>
+<div class="over-card" id="overCard" aria-hidden="true"><div class="oc-title">END OF OVER SCORECARD</div><div class="oc-score" id="ocScore">0/0</div><div class="oc-meta" id="ocMeta">1.0 OVERS</div><table class="oc-table"><thead><tr><th>BATTER</th><th>R</th><th>B</th><th>4s</th><th>6s</th></tr></thead><tbody id="ocBatters"></tbody></table><div class="oc-foot" id="ocBowler">BOWLER · 0.0 OV · 0/0</div></div>
 <div class="state" id="state">Connecting to live score…</div>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -67,7 +82,48 @@ const firebaseConfig={apiKey:"AIzaSyDta_AAwNpU-9OAWtVgYGhB-GmGaZZFLsI",authDomai
 const $=id=>document.getElementById(id);const matchId=new URLSearchParams(location.search).get("match");
 const safe=(v,fallback="—")=>v===undefined||v===null||v===""?fallback:String(v);
 function ballClass(label){const s=String(label||"").toUpperCase();if(s==="W"||s.includes("WICKET"))return"wicket";if(s==="4"||s==="6"||s.startsWith("4")||s.startsWith("6"))return"boundary";if(/WD|NB|B|LB|PEN/.test(s))return"extra";return""}
+let previousSnapshot=null;let boundaryTimer=null;let overCardTimer=null;
+function showBoundaryBanner(kind){
+ const el=$("boundaryBanner");el.classList.remove("four","six","wicket","show");void el.offsetWidth;
+ el.classList.add(kind);$("boundaryWord").textContent=kind==="wicket"?"WICKET!":kind==="six"?"SIX!":"FOUR!";
+ $("boundarySub").textContent=kind==="wicket"?"WICKET FALLEN":kind==="six"?"MAXIMUM · SIX RUNS":"BOUNDARY · FOUR RUNS";el.classList.add("show");
+ clearTimeout(boundaryTimer);boundaryTimer=setTimeout(()=>el.classList.remove("show"),2100);
+}
+function showOverCard(d){
+ const el=$("overCard");$("ocScore").textContent=`${d.Runs??0}/${d.Wickets??0}`;
+ const overs=safe(d.Overs,`${Math.floor((Number(d.LegalBalls)||0)/6)}.0`);
+ const overBalls=Array.isArray(d.CurrentOverBalls)?d.CurrentOverBalls:[];
+ let overRuns=0;overBalls.forEach(b=>{overRuns+=Number(b.runs??b.totalRuns??0)||0;});
+ $("ocMeta").innerHTML=`${overs} OVERS · THIS OVER ${overRuns} RUNS`;
+ const rows=[{name:d.Striker, r:d.StrikerRuns, b:d.StrikerBalls, f:d.StrikerFours, s:d.StrikerSixes, active:true},{name:d.NonStriker,r:d.NonStrikerRuns,b:d.NonStrikerBalls,f:d.NonStrikerFours,s:d.NonStrikerSixes,active:false}];
+ // Dismissed batters are shown when the scorer supplies a FallOfWickets/BattingCard array.
+ const dismissed=Array.isArray(d.BattingCard)?d.BattingCard.filter(x=>x&&x.out):Array.isArray(d.FallOfWickets)?d.FallOfWickets.filter(x=>x&&x.name):[];
+ const all=[...dismissed.map(x=>({name:x.name||x.batter||x.player,r:x.runs??x.Runs,b:x.balls??x.Balls,f:x.fours??x.Fours,s:x.sixes??x.Sixes,out:true})),...rows];
+ $("ocBatters").innerHTML=all.map(x=>`<tr><td>${safe(x.name,"Batter")}${x.out?" (out)":x.active?" *":""}</td><td>${x.r??0}</td><td>${x.b??0}</td><td>${x.f??0}</td><td>${x.s??0}</td></tr>`).join("");
+ const legal=Number(d.BowlerLegal)||0;const bo=`${Math.floor(legal/6)}.${legal%6}`;const econ=legal?((Number(d.BowlerRuns)||0)/(legal/6)).toFixed(2):"0.00";
+ $("ocBowler").textContent=`BOWLER: ${safe(d.Bowler,"Bowler")} · ${bo} OV · ${d.BowlerWickets??0}/${d.BowlerRuns??0} · ECON ${econ}`;
+ el.classList.add("show");clearTimeout(overCardTimer);overCardTimer=setTimeout(()=>el.classList.remove("show"),3000);
+}
+function detectEvents(d){
+ if(!previousSnapshot){previousSnapshot=d;return;}
+ const old=previousSnapshot;const oldBalls=Array.isArray(old.CurrentOverBalls)?old.CurrentOverBalls:[];const newBalls=Array.isArray(d.CurrentOverBalls)?d.CurrentOverBalls:[];
+ const oldLegal=Number(old.LegalBalls)||0;const newLegal=Number(d.LegalBalls)||0;
+ const oldRuns=Number(old.Runs)||0;const newRuns=Number(d.Runs)||0;const oldWickets=Number(old.Wickets)||0;const newWickets=Number(d.Wickets)||0;
+ const ballChanged=newBalls.length!==oldBalls.length||JSON.stringify(newBalls[newBalls.length-1]||null)!==JSON.stringify(oldBalls[oldBalls.length-1]||null);
+ // Any newly recorded ball dismisses the previous over summary immediately.
+ if(ballChanged||newLegal>oldLegal||newRuns!==oldRuns||newWickets!==oldWickets){$("overCard").classList.remove("show");clearTimeout(overCardTimer);}
+ if(newWickets>oldWickets){showBoundaryBanner("wicket");}
+ else if(ballChanged||newRuns>oldRuns){
+   const latest=newBalls[newBalls.length-1]||{};const label=String(latest.label??latest.result??"").toUpperCase();
+   if(label==="6"||label.startsWith("6 ")||label.includes("SIX")){showBoundaryBanner("six");}
+   else if(label==="4"||label.startsWith("4 ")||label.includes("FOUR")){showBoundaryBanner("four");}
+ }
+ // Trigger once when legal-ball count reaches a completed over (6, 12, 18...).
+ if(newLegal>oldLegal&&newLegal>0&&newLegal%6===0&&oldLegal%6!==0&&d.Status!=="completed"&&d.Status!=="innings-complete")showOverCard(d);
+ previousSnapshot=d;
+}
 function render(d){
+ detectEvents(d);
  const batting=safe(d.BattingTeam,d.TeamA||"Batting"),bowling=safe(d.BowlingTeam,d.TeamB||"Bowling");
  // Broadcast layout: the non-batting/opposition team left; active batting team right.
  $("leftTeam").textContent=bowling.toUpperCase();$("rightTeam").textContent=batting.toUpperCase();$("leftTeam").classList.add("opposition-team");$("leftTeam").classList.remove("batting-team");$("rightTeam").classList.add("batting-team");$("rightTeam").classList.remove("opposition-team");

@@ -188,6 +188,7 @@ body.home-mode>header,body.home-mode>main,body.home-mode>footer{display:none!imp
 
 <section class="card scorecard">
 <div class="score-head"><div><div class="muted" id="inningsLabel">INNINGS 1</div><div class="score" id="score">0/0</div><div class="subscore" id="oversText">0.0 overs • 0 legal balls</div></div><div class="score-side"><span class="pill" id="rr">RR 0.00</span><div style="margin-top:8px" class="muted" id="target">Target —</div></div></div>
+ <div class="rowbtn" style="margin-top:10px"><button class="btn soft" id="anytimePdfBtn">Share / Export PDF</button></div>
 
 <div id="livePlayerStats" class="live-player-stats">
  <div class="live-stat-card live-combined-card">
@@ -605,6 +606,7 @@ $("moreTarget").onclick=()=>{let v=prompt("Enter target runs (number):",manualTa
 $("moreOverthrow").onclick=()=>{let v=prompt("Total runs completed on this delivery, including runs off the bat:", "1");if(v!==null&&Number.isInteger(Number(v))&&Number(v)>=0&&Number(v)<=6){addBatRuns(Number(v));record("Overthrow / completed runs recorded: "+v)}};
 $("wideBtn").onclick=()=>addWide(1);$("noBallBtn").onclick=()=>addNoBall(0);$("byeBtn").onclick=()=>addBye("byes");$("legByeBtn").onclick=()=>addBye("legByes");$("penaltyBtn").onclick=addPenalty;$("retireBtn").onclick=retireBatter;$("liveSwapBtn").onclick=swapEnds;$("changeEnds").onclick=swapEnds;$("endOver").onclick=endOver;$("nextInnings").onclick=nextInnings;
 $("undoBtn").onclick=()=>{if(!undoStack.length){record("Nothing to undo.");return}state=undoStack.pop();record("Last action undone.");render()};
+$("anytimePdfBtn").onclick=downloadScorecardPDF;
 $("overlayMode").onclick=()=>{
  const on=!document.body.classList.contains("overlay-only");
  document.body.classList.toggle("overlay-only",on);
@@ -872,11 +874,11 @@ window.__JCL_getFirebasePayload=()=>{
  const bowlerStats=(c.bowlers||{})[c.bowler]||{};
  const currentOverNo=Math.floor(legal/6)+1;
  const currentOverBalls=(c.deliveryLog||[]).filter(d=>Number(d.over)===currentOverNo).map(d=>({ball:d.ball,label:d.label,runs:d.runs}));
- return {MatchCode:jclMatchId,Title:state.matchName||"JCL Match",MatchCountry:state.matchCountry||"India",MatchState:state.matchState||"",MatchCity:state.matchCity||"",Status:state.status||"live",CreatedAtMs:window.__JCL_createdAtMs||Date.now(),FullState:state,TeamA:state.teams[0]||"Team A",TeamB:state.teams[1]||"Team B",Runs:runs,Wickets:Number(c.wickets)||0,LegalBalls:legal,BattingTeam:batting,BowlingTeam:bowling,Overs:`${Math.floor(legal/6)}.${legal%6}`,RunRate:legal?Number((runs/(legal/6)).toFixed(2)):0,Target:target,InningsNo:inn,Striker:striker.name||"",StrikerRuns:Number(striker.runs)||0,StrikerBalls:Number(striker.balls)||0,StrikerFours:Number(striker.fours)||0,StrikerSixes:Number(striker.sixes)||0,NonStriker:non.name||"",NonStrikerRuns:Number(non.runs)||0,NonStrikerBalls:Number(non.balls)||0,NonStrikerFours:Number(non.fours)||0,NonStrikerSixes:Number(non.sixes)||0,Bowler:c.bowler||"",BowlerRuns:Number(bowlerStats.runs)||0,BowlerWickets:Number(bowlerStats.wickets)||0,BowlerLegal:Number(bowlerStats.legal)||0,BowlerWides:Number(bowlerStats.wides)||0,BowlerNoBalls:Number(bowlerStats.noBalls)||0,CurrentOverNo:currentOverNo,CurrentOverBalls:currentOverBalls,Toss:state.toss||"",MaxOvers:state.maxOvers||20};
+ return {MatchCode:jclMatchId,Title:state.matchName||"JCL Match",MatchCountry:state.matchCountry||"India",MatchState:state.matchState||"",MatchCity:state.matchCity||"",Status:state.status||"live",CreatedAtMs:window.__JCL_createdAtMs||Date.now(),FullState:state,UndoStack:undoStack,TeamA:state.teams[0]||"Team A",TeamB:state.teams[1]||"Team B",Runs:runs,Wickets:Number(c.wickets)||0,LegalBalls:legal,BattingTeam:batting,BowlingTeam:bowling,Overs:`${Math.floor(legal/6)}.${legal%6}`,RunRate:legal?Number((runs/(legal/6)).toFixed(2)):0,Target:target,InningsNo:inn,Striker:striker.name||"",StrikerRuns:Number(striker.runs)||0,StrikerBalls:Number(striker.balls)||0,StrikerFours:Number(striker.fours)||0,StrikerSixes:Number(striker.sixes)||0,NonStriker:non.name||"",NonStrikerRuns:Number(non.runs)||0,NonStrikerBalls:Number(non.balls)||0,NonStrikerFours:Number(non.fours)||0,NonStrikerSixes:Number(non.sixes)||0,Bowler:c.bowler||"",BowlerRuns:Number(bowlerStats.runs)||0,BowlerWickets:Number(bowlerStats.wickets)||0,BowlerLegal:Number(bowlerStats.legal)||0,BowlerWides:Number(bowlerStats.wides)||0,BowlerNoBalls:Number(bowlerStats.noBalls)||0,CurrentOverNo:currentOverNo,CurrentOverBalls:currentOverBalls,Toss:state.toss||"",MaxOvers:state.maxOvers||20};
 };
-window.__JCL_restoreState=(saved,docId)=>{
+window.__JCL_restoreState=(saved,docId,savedUndoStack=[])=>{
  if(!saved||!saved.current)throw new Error("This match does not contain a restorable saved state.");
- state=saved; jclMatchId=docId; undoStack=[]; widePending=false; pendingBowlerSelection=false;
+ state=saved; jclMatchId=docId; undoStack=Array.isArray(savedUndoStack)?savedUndoStack.slice(-150):[]; widePending=false; pendingBowlerSelection=false;
  $("teamA").value=state.teams?.[0]||"Team 1"; $("teamB").value=state.teams?.[1]||"Team 2"; $("matchName").value=state.matchName||"JCL Match"; $("matchCountry").value=state.matchCountry||"India"; $("matchState").value=state.matchState||""; $("matchCity").value=state.matchCity||"";
  $("maxOvers").value=String(state.maxOvers||20); $("currentBowler").value=state.current.bowler||"Bowler 1";
  const overlayUrl=new URL("overlay.html",window.location.href);overlayUrl.searchParams.set("match",jclMatchId);jclOverlayUrl=overlayUrl.href;
@@ -938,7 +940,7 @@ window.__JCL_openRemoteMatch=async(id)=>{
  const snap=await getDoc(doc(db,"Matches",id));if(!snap.exists())throw new Error("Match not found or you do not have permission to resume it.");const d=snap.data();
  if(d.OwnerUid!==currentUser.uid)throw new Error("Only the Google account that created this match can resume scoring. Sign in with that same account on both devices.");
  if(!d.FullState){alert("This match has no saved state yet. Please open it on the original phone and allow it to sync first.");return;}
- window.__JCL_createdAtMs=d.CreatedAtMs||Date.now();window.__JCL_restoreState(d.FullState,id);showScorer();
+ window.__JCL_createdAtMs=d.CreatedAtMs||Date.now();window.__JCL_restoreState(d.FullState,id,d.UndoStack||[]);showScorer();
 };
 function showHome(){document.body.classList.add("home-mode");document.body.classList.remove("match-live");$("jclHome").classList.remove("hidden");$("homePanel").classList.add("hidden");$("mainMenuBtn").classList.add("hidden");}
 function showScorer(){document.body.classList.remove("home-mode");$("jclHome").classList.add("hidden");$("homePanel").classList.add("hidden");$("mainMenuBtn").classList.remove("hidden");}

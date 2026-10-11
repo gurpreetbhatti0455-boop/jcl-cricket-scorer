@@ -6,7 +6,7 @@
   "start_url": "/jcl-cricket-scorer/",
   "scope": "/jcl-cricket-scorer/",
   "display": "standalone",
-  "orientation": "landscape",
+  "orientation": "portrait",
   "background_color": "#101820",
   "theme_color": "#101820",
   "icons": [

@@ -1,6 +1,10 @@
 <!doctype html>
 <html lang="en">
 <head>
+<!-- JCL build: separated histories + multiple-match win table | 2026-10-12-r2 -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
  <link rel="manifest" href="/jcl-cricket-scorer/manifest.json">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -995,7 +999,7 @@ function showModeLanding(mode){
  const title=isTournament?"Tournament":"Multiple Matches";
  const createLabel=isTournament?"＋ Create New Tournament":"＋ Create Multiple Match Session";
  const historyLabel=isTournament?"◷ Tournament History":"◷ Multiple Match History";
- showPanel(title,`<div class="guide-step">${isTournament?"Create and manage tournaments separately. Tournament History will show only tournament matches.":"Create repeated matches for turf/box cricket. Each session has its own match history and win table."}</div><button class="btn green home-action" id="modeCreate">${createLabel}</button><button class="btn home-action" id="modeHistory">${historyLabel}</button>`);
+ showPanel(title,`<div class="guide-step">${isTournament?"Create and manage tournaments separately. Tournament History will show only tournament matches.":"Create repeated matches for turf/box cricket. This section keeps its own Multiple Match History and win table; regular matches and tournaments are listed separately."}</div><button class="btn green home-action" id="modeCreate">${createLabel}</button><button class="btn home-action" id="modeHistory">${historyLabel}</button>`);
  $("modeCreate").onclick=()=>{
    if(isTournament){localStorage.setItem("jclTournamentMode","1");localStorage.removeItem("jclMultipleMatchMode");showPanel("Create New Tournament",`<div class="guide-step"><b>Tournament setup</b><br>Set the tournament name and total teams. You can edit team names before starting. Tournament setup is saved on this device.</div><label>Tournament name</label><input id="tournamentNameInput" placeholder="Example: JCL Cup 2026"><label>Total teams</label><input id="tournamentTeamCount" type="number" min="2" max="32" value="4"><button class="btn green home-action" id="makeTournamentTeams">Set up team names</button><div id="tournamentTeamFields"></div>`);setTimeout(()=>{const c=$("tournamentTeamCount"),b=$("makeTournamentTeams"),f=$("tournamentTeamFields");if(b)b.onclick=()=>{const n=Math.max(2,Math.min(32,Number(c.value)||4));f.innerHTML=Array.from({length:n},(_,i)=>`<label>Team ${i+1}</label><input data-tournament-team="${i}" placeholder="Team ${i+1}">`).join("")+`<button class="btn green home-action" id="saveTournamentSetup">Save / Update Team List</button>`;$("saveTournamentSetup").onclick=()=>{const names=[...f.querySelectorAll("[data-tournament-team]")].map((x,i)=>x.value.trim()||`Team ${i+1}`);localStorage.setItem("jclTournamentSetup",JSON.stringify({name:$("tournamentNameInput").value.trim()||"JCL Tournament",teams:names,createdAt:Date.now()}));localStorage.setItem("jclTournamentMode","1");alert("Tournament and team list saved. Open Tournament History to resume saved tournament matches.");};};},0);
    }else{localStorage.setItem("jclMultipleMatchMode","1");localStorage.removeItem("jclTournamentMode");listScreen("multiple");}

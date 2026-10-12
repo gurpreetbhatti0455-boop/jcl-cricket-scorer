@@ -1,12 +1,17 @@
-JCL Cricket Scorer - Multiple Match Win Table Update
+JCL Cricket Scorer — Separated Histories Update
 
 Files:
-- index.html: updated multiple-match results table and team win/loss tally.
-- overlay.html: current overlay file included unchanged for compatibility.
+- index.html: based on the user's uploaded current index.html. Multiple Matches now opens a separate new-session setup screen with session name, total team count, team-name inputs, and Start First Match. Multiple Match History is available only through its separate History option. Existing Tournament History and regular Match History sections remain separate.
+- overlay.html: included from the user's uploaded current overlay.html, preserving the batting/bowling labels and match-result scorecard overlay already present in that file.
 
-Update both files in the root of the existing GitHub repository, preserving the exact names.
+Install:
+1. Extract this ZIP.
+2. Replace index.html and overlay.html in the root of the existing GitHub repository with the files from this ZIP. Keep exact filenames.
+3. Commit both files.
+4. Wait for GitHub Pages to deploy, then open the site in Chrome Incognito or refresh without cache.
+5. Test with a new test match before using live.
 
 Notes:
-- Multiple-match result tallies are stored in this browser's localStorage, so they are device/browser-specific and do not automatically sync to another phone.
-- Create Tournament currently includes a team setup form only; automatic league scheduling, points table and knockout progression are not implemented in this update.
-- Test with practice matches before using during a live broadcast.
+- JavaScript syntax was checked with Node.js.
+- Firebase/PRISM behavior was not end-to-end tested in this environment.
+- Existing historical records lacking AppMode may not be classifiable into the right history section automatically.

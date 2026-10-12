@@ -1002,7 +1002,28 @@ function showModeLanding(mode){
  showPanel(title,`<div class="guide-step">${isTournament?"Create and manage tournaments separately. Tournament History will show only tournament matches.":"Create repeated matches for turf/box cricket. This section keeps its own Multiple Match History and win table; regular matches and tournaments are listed separately."}</div><button class="btn green home-action" id="modeCreate">${createLabel}</button><button class="btn home-action" id="modeHistory">${historyLabel}</button>`);
  $("modeCreate").onclick=()=>{
    if(isTournament){localStorage.setItem("jclTournamentMode","1");localStorage.removeItem("jclMultipleMatchMode");showPanel("Create New Tournament",`<div class="guide-step"><b>Tournament setup</b><br>Set the tournament name and total teams. You can edit team names before starting. Tournament setup is saved on this device.</div><label>Tournament name</label><input id="tournamentNameInput" placeholder="Example: JCL Cup 2026"><label>Total teams</label><input id="tournamentTeamCount" type="number" min="2" max="32" value="4"><button class="btn green home-action" id="makeTournamentTeams">Set up team names</button><div id="tournamentTeamFields"></div>`);setTimeout(()=>{const c=$("tournamentTeamCount"),b=$("makeTournamentTeams"),f=$("tournamentTeamFields");if(b)b.onclick=()=>{const n=Math.max(2,Math.min(32,Number(c.value)||4));f.innerHTML=Array.from({length:n},(_,i)=>`<label>Team ${i+1}</label><input data-tournament-team="${i}" placeholder="Team ${i+1}">`).join("")+`<button class="btn green home-action" id="saveTournamentSetup">Save / Update Team List</button>`;$("saveTournamentSetup").onclick=()=>{const names=[...f.querySelectorAll("[data-tournament-team]")].map((x,i)=>x.value.trim()||`Team ${i+1}`);localStorage.setItem("jclTournamentSetup",JSON.stringify({name:$("tournamentNameInput").value.trim()||"JCL Tournament",teams:names,createdAt:Date.now()}));localStorage.setItem("jclTournamentMode","1");alert("Tournament and team list saved. Open Tournament History to resume saved tournament matches.");};};},0);
-   }else{localStorage.setItem("jclMultipleMatchMode","1");localStorage.removeItem("jclTournamentMode");listScreen("multiple");}
+   }else{
+     localStorage.setItem("jclMultipleMatchMode","1");localStorage.removeItem("jclTournamentMode");
+     showPanel("Create Multiple Match Session",`<div class="guide-step"><b>New session</b><br>Give this session a name and enter all teams once. Your saved Multiple Match History is separate and will only appear when you open that history option.</div><label>Session name</label><input id="multiSessionName" placeholder="Example: Sunday Box Cricket"><label>Total teams</label><input id="multiTeamCount" type="number" min="2" max="32" value="2"><button class="btn home-action" id="multiSetTeams">Set up team names</button><div id="multiTeamFields"></div>`);
+     setTimeout(()=>{
+       const count=$("multiTeamCount"),set=$("multiSetTeams"),fields=$("multiTeamFields");
+       if(!set)return;
+       set.onclick=()=>{
+         const n=Math.max(2,Math.min(32,Number(count.value)||2));
+         fields.innerHTML=Array.from({length:n},(_,i)=>`<label>Team ${i+1}</label><input data-multi-team="${i}" placeholder="Team ${i+1}" maxlength="28">`).join("")+`<button class="btn green home-action" id="multiStartFirst">Start First Match</button>`;
+         $("multiStartFirst").onclick=()=>{
+           const names=[...fields.querySelectorAll("[data-multi-team]")].map((x,i)=>x.value.trim()||`Team ${i+1}`);
+           const session={id:"jcl-ms-"+Date.now(),name:$("multiSessionName").value.trim()||"Multiple Match Session",teams:names,createdAt:Date.now()};
+           localStorage.setItem("jclMultiMatchSession",JSON.stringify(session));
+           localStorage.setItem("jclMultipleMatchMode","1");localStorage.removeItem("jclTournamentMode");
+           showScorer();document.body.classList.remove("match-live");
+           $("teamA").value=names[0]||"Team 1";$("teamB").value=names[1]||"Team 2";
+           $("matchName").value=session.name+" - Match 1";$("maxOvers").value="1";$("customOvers").classList.add("hidden");
+           updateMultipleModeBadge();window.scrollTo(0,0);
+         };
+       };
+     },0);
+   }
  };
  $("modeHistory").onclick=()=>listScreen(isTournament?"tournament":"multiple");
 }

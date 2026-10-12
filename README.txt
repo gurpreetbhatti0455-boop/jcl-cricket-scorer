@@ -1,17 +1,24 @@
-JCL Cricket Scorer — Separated Histories Update
+JCL Cricket Scorer — Firebase Sync + Tournament Start + History Fix
 
-Files:
-- index.html: based on the user's uploaded current index.html. Multiple Matches now opens a separate new-session setup screen with session name, total team count, team-name inputs, and Start First Match. Multiple Match History is available only through its separate History option. Existing Tournament History and regular Match History sections remain separate.
-- overlay.html: included from the user's uploaded current overlay.html, preserving the batting/bowling labels and match-result scorecard overlay already present in that file.
+Included files:
+- index.html: fixes the Multiple Match History error (multiResultsHtml is now available to the history screen) and starts the first tournament match immediately after saving the team list, opening the normal toss setup for the first two teams.
+- overlay.html: the current overlay file from the latest provided package, preserving the existing batting/bowling and match-result presentation.
+- firestore.rules: proposed secure Firestore rules for private owner-only Matches and publicly readable scoreboard-only PublicMatches. PublicMatches writes are limited to the signed-in owner of the corresponding private match.
 
-Install:
-1. Extract this ZIP.
-2. Replace index.html and overlay.html in the root of the existing GitHub repository with the files from this ZIP. Keep exact filenames.
-3. Commit both files.
-4. Wait for GitHub Pages to deploy, then open the site in Chrome Incognito or refresh without cache.
-5. Test with a new test match before using live.
+IMPORTANT — Firebase rules must be published in Firebase Console:
+1. Open Firebase Console > project jcl-cricket-scorer > Firestore Database > Rules.
+2. Save a backup of your current rules first.
+3. Open the included firestore.rules file and copy its full contents into the Rules editor.
+4. Click Publish.
+5. Do not expect uploading firestore.rules to GitHub alone to change Firebase security rules.
 
-Notes:
-- JavaScript syntax was checked with Node.js.
-- Firebase/PRISM behavior was not end-to-end tested in this environment.
-- Existing historical records lacking AppMode may not be classifiable into the right history section automatically.
+GitHub update:
+1. Replace index.html and overlay.html in the root of the existing repository.
+2. Commit both files and wait for the newest GitHub Pages deployment to show Success.
+3. Open the site in Chrome Incognito and test a short match.
+
+Safety/validation notes:
+- JavaScript syntax checked with Node.js.
+- Firebase/PRISM were not end-to-end tested here.
+- These rules assume the app uses only the Matches and PublicMatches collections described in the app. Review any additional collections/rules in your existing project before replacing your full ruleset. Keep a backup and never use open write permissions for all users.
+- Tournament setup now launches Match 1 after saving team names; full automated league fixtures/quarter-final/semi-final/final bracket logic is not implemented by this patch.

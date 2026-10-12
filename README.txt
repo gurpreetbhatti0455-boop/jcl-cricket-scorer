@@ -1,24 +1,31 @@
-JCL Cricket Scorer — Firebase Sync + Tournament Start + History Fix
+JCL CRICKET SCORER — FINAL TOURNAMENT / MULTIPLE MATCH FIX
 
-Included files:
-- index.html: fixes the Multiple Match History error (multiResultsHtml is now available to the history screen) and starts the first tournament match immediately after saving the team list, opening the normal toss setup for the first two teams.
-- overlay.html: the current overlay file from the latest provided package, preserving the existing batting/bowling and match-result presentation.
-- firestore.rules: proposed secure Firestore rules for private owner-only Matches and publicly readable scoreboard-only PublicMatches. PublicMatches writes are limited to the signed-in owner of the corresponding private match.
+Files in this package:
+- index.html — tournament setup, multiple-match history/results, scoring app, and Firebase publishing.
+- overlay.html — live overlay and completed-match result display.
+- firestore.rules — owner-only private match writes and public read-only overlay rules.
 
-IMPORTANT — Firebase rules must be published in Firebase Console:
-1. Open Firebase Console > project jcl-cricket-scorer > Firestore Database > Rules.
-2. Save a backup of your current rules first.
-3. Open the included firestore.rules file and copy its full contents into the Rules editor.
-4. Click Publish.
-5. Do not expect uploading firestore.rules to GitHub alone to change Firebase security rules.
+IMPORTANT FIX
+The Multiple Match results renderer is now defined at top-level and exposed as window.__JCL_multiResultsHtml. Both Multiple Match History and the completed-match panel call the global function, so they do not depend on render()'s local scope. This addresses the “multiResultsHtml is not defined” error.
 
-GitHub update:
-1. Replace index.html and overlay.html in the root of the existing repository.
-2. Commit both files and wait for the newest GitHub Pages deployment to show Success.
-3. Open the site in Chrome Incognito and test a short match.
+INSTALL
+1. Back up your current GitHub index.html, overlay.html, and Firebase Firestore rules.
+2. Replace the repository's index.html with this package's index.html (keep the filename index.html).
+3. Replace the repository's overlay.html with this package's overlay.html (keep the filename overlay.html).
+4. Commit the changes and wait for GitHub Pages to deploy.
+5. On your phone, open the scorer in Chrome and reload the page. If the old error remains, open the site in an Incognito tab to bypass cached files.
 
-Safety/validation notes:
-- JavaScript syntax checked with Node.js.
-- Firebase/PRISM were not end-to-end tested here.
-- These rules assume the app uses only the Matches and PublicMatches collections described in the app. Review any additional collections/rules in your existing project before replacing your full ruleset. Keep a backup and never use open write permissions for all users.
-- Tournament setup now launches Match 1 after saving team names; full automated league fixtures/quarter-final/semi-final/final bracket logic is not implemented by this patch.
+FIREBASE PERMISSIONS
+If the app still shows “Missing or insufficient permissions”, the rules file must be published separately:
+1. Firebase Console > Firestore Database > Rules.
+2. Back up the existing rules, then paste the contents of firestore.rules and click Publish.
+3. Firebase Console > Authentication > Sign-in method: ensure Google sign-in is enabled.
+
+TEST BEFORE A LIVE MATCH
+- Open Multiple Match mode and open Multiple Match History.
+- Set up a tournament, save team names, and verify it opens toss setup for the first match.
+- Start a dummy match and check that the overlay updates.
+- Complete a dummy match and confirm the result appears.
+
+LIMITATIONS
+Tournament team names are stored locally in this browser. Automatic tournament fixtures/brackets are not implemented. Firebase behavior must be verified against the user's live project after publishing; these files cannot deploy changes to GitHub or Firebase automatically.

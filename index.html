@@ -493,6 +493,31 @@ function downloadScorecardPDF(){
  if(!w){alert("Please allow pop-ups for this page, then tap Download PDF again.");return}
  w.document.open();w.document.write(html);w.document.close();
 }
+function readMultiResults(){try{return JSON.parse(localStorage.getItem("jclMultiMatchResults")||"[]")}catch(e){return []}}
+function saveMultiMatchResult(){
+ if(localStorage.getItem("jclMultipleMatchMode")!=="1"||state.status!=="completed")return;
+ const id=jclMatchId||("local-"+Date.now());const results=readMultiResults();if(results.some(x=>x.id===id))return;
+ const first=state.innings[0]||{},second=cur();
+ const teamA=state.teams[0]||"Team 1",teamB=state.teams[1]||"Team 2";
+ const score=(name)=>{const inn=state.innings.find(x=>x.summary&&x.summary.team===name);if(inn)return `${inn.summary.runs}/${inn.summary.wickets}`;if(state.teams[second.batting]===name)return `${second.runs}/${second.wickets}`;return "—"};
+ const result=getMatchResult();let winner="";if(result&&!/^Match tied/i.test(result)){if(result.startsWith(teamA))winner=teamA;else if(result.startsWith(teamB))winner=teamB;else winner=result.split(" won by ")[0]||"";}
+ results.push({id,number:results.length+1,teamA,teamB,winner,result:result||"Match completed",scoreA:score(teamA),scoreB:score(teamB),date:new Date().toLocaleString()});
+ localStorage.setItem("jclMultiMatchResults",JSON.stringify(results));
+}
+function multiResultsHtml(){
+ const results=readMultiResults();const teams={};
+ results.forEach(m=>{[m.teamA,m.teamB].forEach(t=>{if(!teams[t])teams[t]={team:t,played:0,won:0,lost:0,tied:0};teams[t].played++;});if(m.winner&&teams[m.winner])teams[m.winner].won++;else if(/^Match tied/i.test(m.result)){teams[m.teamA].tied++;teams[m.teamB].tied++;}if(m.winner){const loser=m.winner===m.teamA?m.teamB:m.teamA;if(teams[loser])teams[loser].lost++;}});
+ const rows=Object.values(teams).sort((a,b)=>b.won-a.won||b.tied-a.tied||a.team.localeCompare(b.team));
+ let html='<div class="multi-results-title">🏏 Multiple Match Results &amp; Team Wins</div>';
+ if(!rows.length)return html+'<p>No completed matches in this Multiple Match session yet. Results and win counts will appear here after each match.</p>';
+ html+='<div class="multi-results-wrap"><table class="multi-results-table"><thead><tr><th>Team</th><th>Played</th><th>Won</th><th>Lost</th><th>Tied</th></tr></thead><tbody>';
+ html+=rows.map(t=>`<tr><td><b>${esc(t.team)}</b></td><td>${t.played}</td><td>${t.won}</td><td>${t.lost}</td><td>${t.tied}</td></tr>`).join('');
+ html+='</tbody></table></div><div class="multi-results-title">Completed Matches</div>';
+ html+=results.map(m=>`<div class="home-item"><strong>Match ${m.number}: ${esc(m.teamA)} vs ${esc(m.teamB)}</strong><small>${esc(m.scoreA)} • ${esc(m.scoreB)}</small><small>${esc(m.result)} · ${esc(m.date)}</small></div>`).join('');
+ return html;
+}
+window.__JCL_multiResultsHtml=multiResultsHtml;
+
 function render(){
 let c=cur();
 if(state.inningsNo===1&&(state.status==="innings-complete"||c.legalBalls>=state.maxOvers*6||c.wickets>=10)){
@@ -536,30 +561,7 @@ if($("deliveryLog")){
   ? `<div class="over-log"><div class="over-log-title">Over ${currentOver}</div><div class="ball-chips">${shown.map((d,i)=>`<button class="ball-chip ${d.label==="W"?"wicket":(/Wd|Nb|B|LB/.test(d.label)?"extra":"")}" data-current-delivery="${i}" title="${d.runs} run(s)">${esc(d.label)}</button>`).join("")}</div></div>`
   : '<div class="muted">No deliveries in this over yet.</div>';
 }
-function readMultiResults(){try{return JSON.parse(localStorage.getItem("jclMultiMatchResults")||"[]")}catch(e){return []}}
-function saveMultiMatchResult(){
- if(localStorage.getItem("jclMultipleMatchMode")!=="1"||state.status!=="completed")return;
- const id=jclMatchId||("local-"+Date.now());const results=readMultiResults();if(results.some(x=>x.id===id))return;
- const first=state.innings[0]||{},second=cur();
- const teamA=state.teams[0]||"Team 1",teamB=state.teams[1]||"Team 2";
- const score=(name)=>{const inn=state.innings.find(x=>x.summary&&x.summary.team===name);if(inn)return `${inn.summary.runs}/${inn.summary.wickets}`;if(state.teams[second.batting]===name)return `${second.runs}/${second.wickets}`;return "—"};
- const result=getMatchResult();let winner="";if(result&&!/^Match tied/i.test(result)){if(result.startsWith(teamA))winner=teamA;else if(result.startsWith(teamB))winner=teamB;else winner=result.split(" won by ")[0]||"";}
- results.push({id,number:results.length+1,teamA,teamB,winner,result:result||"Match completed",scoreA:score(teamA),scoreB:score(teamB),date:new Date().toLocaleString()});
- localStorage.setItem("jclMultiMatchResults",JSON.stringify(results));
-}
-function multiResultsHtml(){
- const results=readMultiResults();const teams={};
- results.forEach(m=>{[m.teamA,m.teamB].forEach(t=>{if(!teams[t])teams[t]={team:t,played:0,won:0,lost:0,tied:0};teams[t].played++;});if(m.winner&&teams[m.winner])teams[m.winner].won++;else if(/^Match tied/i.test(m.result)){teams[m.teamA].tied++;teams[m.teamB].tied++;}if(m.winner){const loser=m.winner===m.teamA?m.teamB:m.teamA;if(teams[loser])teams[loser].lost++;}});
- const rows=Object.values(teams).sort((a,b)=>b.won-a.won||b.tied-a.tied||a.team.localeCompare(b.team));
- let html='<div class="multi-results-title">🏏 Multiple Match Results &amp; Team Wins</div>';
- if(!rows.length)return html+'<p>No completed matches in this Multiple Match session yet. Results and win counts will appear here after each match.</p>';
- html+='<div class="multi-results-wrap"><table class="multi-results-table"><thead><tr><th>Team</th><th>Played</th><th>Won</th><th>Lost</th><th>Tied</th></tr></thead><tbody>';
- html+=rows.map(t=>`<tr><td><b>${esc(t.team)}</b></td><td>${t.played}</td><td>${t.won}</td><td>${t.lost}</td><td>${t.tied}</td></tr>`).join('');
- html+='</tbody></table></div><div class="multi-results-title">Completed Matches</div>';
- html+=results.map(m=>`<div class="home-item"><strong>Match ${m.number}: ${esc(m.teamA)} vs ${esc(m.teamB)}</strong><small>${esc(m.scoreA)} • ${esc(m.scoreB)}</small><small>${esc(m.result)} · ${esc(m.date)}</small></div>`).join('');
- return html;
-}
-window.__JCL_multiResultsHtml=multiResultsHtml;
+
 
 const resultPanel=$("matchResultPanel");
 if(resultPanel){
@@ -568,7 +570,7 @@ if(resultPanel){
   resultPanel.classList.remove("hidden");
   const first=state.innings[0],second=cur();
   const scoreForTeam=name=>{const inn=state.innings.find(x=>x.summary&&x.summary.team===name);if(inn)return `${inn.summary.runs}/${inn.summary.wickets}`;if(state.teams[second.batting]===name)return `${second.runs}/${second.wickets}`;return "—"};
-  resultPanel.innerHTML=`<div class="result-title">MATCH COMPLETED</div><div class="result-winner">${esc(getMatchResult())}</div><div class="muted">${esc(state.teams[0])}: ${scoreForTeam(state.teams[0])} &nbsp; • &nbsp; ${esc(state.teams[1])}: ${scoreForTeam(state.teams[1])}</div><div class="result-actions"><button class="btn soft" id="downloadPdfBtn">Download Scorecard PDF</button><button class="btn" id="viewScorecardBtn">View full scorecard</button></div>${localStorage.getItem("jclMultipleMatchMode")==="1"?`<div class="next-match-note">Multiple Match Mode is ON. Ready for the next match?</div><div class="result-actions"><button class="btn green" id="nextMatchBtn">＋ NEXT MATCH</button><button class="btn" id="finishMultipleBtn">End Multiple-Match Session</button></div>${multiResultsHtml()}`:""}<div id="fullScorecardDetails" class="hidden"></div>`;
+  resultPanel.innerHTML=`<div class="result-title">MATCH COMPLETED</div><div class="result-winner">${esc(getMatchResult())}</div><div class="muted">${esc(state.teams[0])}: ${scoreForTeam(state.teams[0])} &nbsp; • &nbsp; ${esc(state.teams[1])}: ${scoreForTeam(state.teams[1])}</div><div class="result-actions"><button class="btn soft" id="downloadPdfBtn">Download Scorecard PDF</button><button class="btn" id="viewScorecardBtn">View full scorecard</button></div>${localStorage.getItem("jclMultipleMatchMode")==="1"?`<div class="next-match-note">Multiple Match Mode is ON. Ready for the next match?</div><div class="result-actions"><button class="btn green" id="nextMatchBtn">＋ NEXT MATCH</button><button class="btn" id="finishMultipleBtn">End Multiple-Match Session</button></div>${window.__JCL_multiResultsHtml()}`:""}<div id="fullScorecardDetails" class="hidden"></div>`;
   $("downloadPdfBtn").onclick=downloadScorecardPDF;
   const nextMatchBtn=$("nextMatchBtn");if(nextMatchBtn)nextMatchBtn.onclick=()=>{prepareNextMultipleMatch();};
   const finishMultipleBtn=$("finishMultipleBtn");if(finishMultipleBtn)finishMultipleBtn.onclick=()=>{localStorage.removeItem("jclMultipleMatchMode");updateMultipleModeBadge();window.__JCL_showHome?.();};

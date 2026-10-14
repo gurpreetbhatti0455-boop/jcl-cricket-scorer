@@ -504,16 +504,45 @@ function downloadScorecardPDF(){
  if(!w){alert("Please allow pop-ups for this page, then tap Download PDF again.");return}
  w.document.open();w.document.write(html);w.document.close();
 }
-function readMultiResults(){try{return JSON.parse(localStorage.getItem("jclMultiMatchResults")||"[]")}catch(e){return []}}
+function readMultiResults(){
+ try{
+  const raw=JSON.parse(localStorage.getItem("jclMultiMatchResults")||"[]");
+  const session=JSON.parse(localStorage.getItem("jclMultiSession")||"null");
+  if(!session||!session.id)return [];
+  // Scope this table to the active session. Older untagged records are migrated
+  // only if their saved date is on/after this session's start time.
+  let changed=false;
+  const parseLegacyDate=value=>{
+   const m=String(value||"").match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:,?\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
+   if(!m)return NaN;
+   // toLocaleString() on the user's India device is DD/MM/YYYY.
+   return new Date(Number(m[3]),Number(m[2])-1,Number(m[1]),Number(m[4]||0),Number(m[5]||0),Number(m[6]||0)).getTime();
+  };
+  const filtered=raw.filter(item=>{
+   if(item.sessionId===session.id)return true;
+   if(item.sessionId)return false;
+   const time=Number(item.timestamp)||parseLegacyDate(item.date);
+   if(Number.isFinite(time)&&time>=Number(session.startedAt||0)){
+    item.sessionId=session.id;item.timestamp=time;changed=true;return true;
+   }
+   changed=true;return false;
+  });
+  if(changed)localStorage.setItem("jclMultiMatchResults",JSON.stringify(filtered));
+  return filtered;
+ }catch(e){return []}
+}
 function saveMultiMatchResult(){
  if(localStorage.getItem("jclMultipleMatchMode")!=="1"||state.status!=="completed")return;
+ const session=(()=>{try{return JSON.parse(localStorage.getItem("jclMultiSession")||"null")}catch(e){return null}})();
+ if(!session||!session.id)return;
  const id=jclMatchId||("local-"+Date.now());const results=readMultiResults();if(results.some(x=>x.id===id))return;
- const first=state.innings[0]||{},second=cur();
+ const second=cur();
  const teamA=state.teams[0]||"Team 1",teamB=state.teams[1]||"Team 2";
  const score=(name)=>{const inn=state.innings.find(x=>x.summary&&x.summary.team===name);if(inn)return `${inn.summary.runs}/${inn.summary.wickets}`;if(state.teams[second.batting]===name)return `${second.runs}/${second.wickets}`;return "—"};
  const result=getMatchResult();let winner="";if(result&&!/^Match tied/i.test(result)){if(result.startsWith(teamA))winner=teamA;else if(result.startsWith(teamB))winner=teamB;else winner=result.split(" won by ")[0]||"";}
- let manOfMatch="";if(!results.some(x=>x.id===id)){manOfMatch=(prompt("Man of the Match (enter player name, or leave blank):","")||"").trim();}
- results.push({id,number:results.length+1,teamA,teamB,winner,result:result||"Match completed",scoreA:score(teamA),scoreB:score(teamB),manOfMatch,date:new Date().toLocaleString()});
+ const manOfMatch=(prompt("Man of the Match (enter player name, or leave blank):","")||"").trim();
+ const timestamp=Date.now();
+ results.push({id,sessionId:session.id,timestamp,number:results.length+1,teamA,teamB,winner,result:result||"Match completed",scoreA:score(teamA),scoreB:score(teamB),manOfMatch,date:new Date(timestamp).toLocaleString()});
  localStorage.setItem("jclMultiMatchResults",JSON.stringify(results));
 }
 function multiResultsHtml(){

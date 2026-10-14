@@ -129,6 +129,7 @@ header{background:#456b8a!important;border-bottom-color:#385a76!important}
 }
 
 .striker-star{color:#e0a526;font-size:15px;margin-right:3px}.live-player-line{align-items:center}\n.multi-results-table{width:100%;border-collapse:collapse;margin:10px 0;font-size:12px}.multi-results-table th,.multi-results-table td{padding:8px 5px;border-bottom:1px solid #dce3e9;text-align:left}.multi-results-table th{background:#eef3f7;color:#526a7d}.multi-results-wrap{overflow-x:auto}.multi-results-title{font-weight:900;font-size:16px;margin:16px 0 6px}
+.session-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.session-actions .btn{flex:1;min-width:95px;margin:0}.multi-session-card{padding:14px}.multi-session-card small{line-height:1.45}
 </style>
 </head>
 <body class="home-mode">
@@ -508,26 +509,11 @@ function readMultiResults(){
  try{
   const raw=JSON.parse(localStorage.getItem("jclMultiMatchResults")||"[]");
   const session=JSON.parse(localStorage.getItem("jclMultiSession")||"null");
-  if(!session||!session.id)return [];
-  // Scope this table to the active session. Older untagged records are migrated
-  // only if their saved date is on/after this session's start time.
-  let changed=false;
-  const parseLegacyDate=value=>{
-   const m=String(value||"").match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:,?\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
-   if(!m)return NaN;
-   // toLocaleString() on the user's India device is DD/MM/YYYY.
-   return new Date(Number(m[3]),Number(m[2])-1,Number(m[1]),Number(m[4]||0),Number(m[5]||0),Number(m[6]||0)).getTime();
-  };
-  const filtered=raw.filter(item=>{
-   if(item.sessionId===session.id)return true;
-   if(item.sessionId)return false;
-   const time=Number(item.timestamp)||parseLegacyDate(item.date);
-   if(Number.isFinite(time)&&time>=Number(session.startedAt||0)){
-    item.sessionId=session.id;item.timestamp=time;changed=true;return true;
-   }
-   changed=true;return false;
-  });
-  if(changed)localStorage.setItem("jclMultiMatchResults",JSON.stringify(filtered));
+  if(!Array.isArray(raw)||!session||!session.id)return [];
+  // Strict session isolation: never import old untagged results based on date.
+  // Every new completed match is saved with the active session's unique ID.
+  const filtered=raw.filter(item=>item&&item.sessionId===session.id);
+  if(filtered.length!==raw.length)localStorage.setItem("jclMultiMatchResults",JSON.stringify(filtered));
   return filtered;
  }catch(e){return []}
 }
@@ -545,19 +531,46 @@ function saveMultiMatchResult(){
  results.push({id,sessionId:session.id,timestamp,number:results.length+1,teamA,teamB,winner,result:result||"Match completed",scoreA:score(teamA),scoreB:score(teamB),manOfMatch,date:new Date(timestamp).toLocaleString()});
  localStorage.setItem("jclMultiMatchResults",JSON.stringify(results));
 }
-function multiResultsHtml(){
- const results=readMultiResults();const teams={};
+function multiResultsHtml(resultsInput){
+ const results=Array.isArray(resultsInput)?resultsInput:readMultiResults();const teams={};
  results.forEach(m=>{[m.teamA,m.teamB].forEach(t=>{if(!teams[t])teams[t]={team:t,played:0,won:0,lost:0,tied:0};teams[t].played++;});if(m.winner&&teams[m.winner])teams[m.winner].won++;else if(/^Match tied/i.test(m.result)){teams[m.teamA].tied++;teams[m.teamB].tied++;}if(m.winner){const loser=m.winner===m.teamA?m.teamB:m.teamA;if(teams[loser])teams[loser].lost++;}});
  const rows=Object.values(teams).sort((a,b)=>b.won-a.won||b.tied-a.tied||a.team.localeCompare(b.team));
  let html='<div class="multi-results-title">🏏 Multiple Match Results &amp; Team Wins</div>';
- if(!rows.length)return html+'<p>No completed matches in this Multiple Match session yet. Results and win counts will appear here after each match.</p>';
+ if(!rows.length)return html+'<p>No completed matches in this session yet. Results and win counts will appear here after each match.</p>';
  html+='<div class="multi-results-wrap"><table class="multi-results-table"><thead><tr><th>Team</th><th>Played</th><th>Won</th><th>Lost</th><th>Tied</th></tr></thead><tbody>';
  html+=rows.map(t=>`<tr><td><b>${esc(t.team)}</b></td><td>${t.played}</td><td>${t.won}</td><td>${t.lost}</td><td>${t.tied}</td></tr>`).join('');
  html+='</tbody></table></div><div class="multi-results-title">Completed Matches</div>';
- html+=results.map(m=>`<div class="home-item"><strong>Match ${m.number}: ${esc(m.teamA)} vs ${esc(m.teamB)}</strong><small>${esc(m.scoreA)} • ${esc(m.scoreB)}</small><small>${esc(m.result)} · ${esc(m.date)}</small><small><b>Man of the Match:</b> ${esc(m.manOfMatch||"Not recorded")}</small></div>`).join('');
+ html+=results.map((m,i)=>`<div class="home-item"><strong>Match ${esc(m.number||i+1)}: ${esc(m.teamA)} vs ${esc(m.teamB)}</strong><small>${esc(m.scoreA)} • ${esc(m.scoreB)}</small><small>${esc(m.result)} · ${esc(m.date)}</small><small><b>Man of the Match:</b> ${esc(m.manOfMatch||"Not recorded")}</small></div>`).join('');
  return html;
 }
 window.__JCL_multiResultsHtml=multiResultsHtml;
+function getMultiSessionHistory(){
+ let history=[];try{history=JSON.parse(localStorage.getItem("jclMultiSessionsHistory")||"[]");if(!Array.isArray(history))history=[];}catch(e){history=[];}
+ const active=(()=>{try{return JSON.parse(localStorage.getItem("jclMultiSession")||"null")}catch(e){return null}})();
+ const sessions=history.filter(x=>x&&x.id).map(x=>({...x,results:Array.isArray(x.results)?x.results:[]}));
+ if(active&&active.id&&!active.ended){
+  const current={...active,results:readMultiResults(),ended:false};
+  const at=sessions.findIndex(x=>x.id===current.id);if(at>=0)sessions.splice(at,1);sessions.unshift(current);
+ }
+ const seen=new Set();return sessions.filter(x=>{if(seen.has(x.id))return false;seen.add(x.id);return true;}).sort((a,b)=>(Number(b.startedAt)||0)-(Number(a.startedAt)||0));
+}
+function showMultiSessionHistory(){
+ const sessions=getMultiSessionHistory();
+ const cards=sessions.map((session,i)=>{
+  const results=Array.isArray(session.results)?session.results:[];
+  const latest=results[results.length-1];
+  const matchId=session.currentMatchId||(latest&&latest.id)||"";
+  const status=session.ended?"Completed":"In progress";
+  const date=session.startedAt?new Date(session.startedAt).toLocaleString():"Date not available";
+  const teamLine=Array.isArray(session.teams)?session.teams.join(" · "):"";
+  return `<div class="home-item multi-session-card"><strong>${esc(session.name||`Multiple Match Session ${i+1}`)}</strong><small>${esc(date)} · ${results.length} completed match${results.length===1?"":"es"} · ${status}</small><small><b>Teams:</b> ${esc(teamLine||"Not recorded")}</small><div class="session-actions"><button class="btn green" data-session-resume="${esc(matchId)}">Resume Match</button><button class="btn" data-session-overlay="${esc(matchId)}">Overlay</button><button class="btn" data-session-points="${esc(session.id)}">Point Table</button></div></div>`;
+ }).join("");
+ showPanel("Multiple Match History",`<button class="btn green home-action" id="multiCreateAnother">＋ Create Another Match</button><div class="multi-results-title">Match History</div>${cards||'<p>No multiple-match sessions yet. Tap Create Another Match to create your first session.</p>'}`);
+ const create=$("multiCreateAnother");if(create)create.onclick=()=>{const active=(()=>{try{return JSON.parse(localStorage.getItem("jclMultiSession")||"null")}catch(e){return null}})();if(active&&!active.ended){const completed=readMultiResults().some(m=>m.id===active.currentMatchId);if(active.currentMatchId&&!completed){if(confirm("A match may still be in progress. Open its scorer instead of starting another match?")){window.__JCL_openRemoteMatch(active.currentMatchId).catch(e=>alert(e.message));}return;}prepareNextMultipleMatch();}else{showModeLanding("multiple");}};
+ $("homePanelContent").querySelectorAll("[data-session-resume]").forEach(b=>b.onclick=()=>{const id=b.dataset.sessionResume;if(!id){alert("No saved match is linked to this session yet.");return;}window.__JCL_openRemoteMatch(id).catch(e=>alert(e.message));});
+ $("homePanelContent").querySelectorAll("[data-session-overlay]").forEach(b=>b.onclick=()=>{const id=b.dataset.sessionOverlay;if(!id){alert("No match overlay is available for this session yet.");return;}const url=new URL("overlay.html",location.href);url.searchParams.set("match",id);window.open(url.href,"_blank");});
+ $("homePanelContent").querySelectorAll("[data-session-points]").forEach(b=>b.onclick=()=>{const session=getMultiSessionHistory().find(x=>x.id===b.dataset.sessionPoints);if(!session)return;showPanel(`Point Table — ${session.name||"Multiple Match Session"}`,`${multiResultsHtml(session.results||[])}<button class="btn home-action" id="backToMultiHistory">← Back to Match History</button>`);$("backToMultiHistory").onclick=showMultiSessionHistory;});
+}
 
 function render(){
 let c=cur();
@@ -614,7 +627,7 @@ if(resultPanel){
   resultPanel.innerHTML=`<div class="result-title">MATCH COMPLETED</div><div class="result-winner">${esc(getMatchResult())}</div><div class="muted">${esc(state.teams[0])}: ${scoreForTeam(state.teams[0])} &nbsp; • &nbsp; ${esc(state.teams[1])}: ${scoreForTeam(state.teams[1])}</div><div class="result-actions"><button class="btn soft" id="downloadPdfBtn">Download Scorecard PDF</button><button class="btn" id="viewScorecardBtn">View full scorecard</button></div>${localStorage.getItem("jclMultipleMatchMode")==="1"?`<div class="next-match-note">Multiple Match Mode is ON. Ready for the next match?</div><div class="result-actions"><button class="btn green" id="nextMatchBtn">＋ NEXT MATCH</button><button class="btn" id="finishMultipleBtn">End Multiple-Match Session</button></div>`:""}<div id="fullScorecardDetails" class="hidden"></div>`;
   $("downloadPdfBtn").onclick=downloadScorecardPDF;
   const nextMatchBtn=$("nextMatchBtn");if(nextMatchBtn)nextMatchBtn.onclick=()=>{prepareNextMultipleMatch();};
-  const finishMultipleBtn=$("finishMultipleBtn");if(finishMultipleBtn)finishMultipleBtn.onclick=()=>{const session=(()=>{try{return JSON.parse(localStorage.getItem("jclMultiSession")||"null")}catch(e){return null}})();if(session){session.ended=true;session.endedAt=Date.now();session.results=readMultiResults();const all=JSON.parse(localStorage.getItem("jclMultiSessionsHistory")||"[]");all.unshift(session);localStorage.setItem("jclMultiSessionsHistory",JSON.stringify(all));}localStorage.removeItem("jclMultipleMatchMode");updateMultipleModeBadge();showPanel("Multiple-Match Session Completed",(window.__JCL_multiResultsHtml?window.__JCL_multiResultsHtml():"")+`<button class="btn green home-action" id="multiDoneHome">Back to Home</button>`);$("multiDoneHome").onclick=()=>window.__JCL_showHome?.();};
+  const finishMultipleBtn=$("finishMultipleBtn");if(finishMultipleBtn)finishMultipleBtn.onclick=()=>{const session=(()=>{try{return JSON.parse(localStorage.getItem("jclMultiSession")||"null")}catch(e){return null}})();if(session){session.ended=true;session.endedAt=Date.now();session.results=readMultiResults();const all=JSON.parse(localStorage.getItem("jclMultiSessionsHistory")||"[]");const at=all.findIndex(x=>x&&x.id===session.id);if(at>=0)all.splice(at,1);all.unshift(session);localStorage.setItem("jclMultiSessionsHistory",JSON.stringify(all));localStorage.setItem("jclMultiSession",JSON.stringify(session));}localStorage.removeItem("jclMultipleMatchMode");updateMultipleModeBadge();showPanel("Multiple-Match Session Completed",`<div class="guide-step">This session is complete and saved in Multiple Match History. Open its <b>Point Table</b> whenever you want to view the standings.</div><button class="btn green home-action" id="multiDoneHistory">Open Multiple Match History</button><button class="btn home-action" id="multiDoneHome">Back to Home</button>`);$("multiDoneHistory").onclick=showMultiSessionHistory;$("multiDoneHome").onclick=()=>window.__JCL_showHome?.();};
   $("viewScorecardBtn").onclick=()=>{const d=$("fullScorecardDetails");d.classList.toggle("hidden");d.innerHTML=state.innings.map((x,i)=>`<div style="padding:8px 0;border-bottom:1px solid #ddd"><b>${ordinalInningsName(i+1)} — ${esc(x.summary?.team||state.teams[x.batting])}</b><br>${x.runs}/${x.wickets} (${Math.floor(x.legalBalls/6)}.${x.legalBalls%6} overs)</div>`).join("")};
  }else{resultPanel.classList.add("hidden");resultPanel.innerHTML=""}
 }
@@ -686,6 +699,9 @@ async function confirmTossAndStart(){
  $("openingStriker").value="";$("openingNonStriker").value="";$("openingBowler").value="";
  // Create a random, hard-to-guess match document ID. Resume permission is enforced by Firebase owner rules.
  jclMatchId="jcl-"+Array.from(crypto.getRandomValues(new Uint8Array(16))).map(x=>x.toString(16).padStart(2,"0")).join("");
+ if(localStorage.getItem("jclMultipleMatchMode")==="1"){
+  try{const activeSession=JSON.parse(localStorage.getItem("jclMultiSession")||"null");if(activeSession&&!activeSession.ended){activeSession.currentMatchId=jclMatchId;activeSession.lastMatchName=state.matchName;localStorage.setItem("jclMultiSession",JSON.stringify(activeSession));}}catch(e){}
+ }
  window.__JCL_createdAtMs=Date.now();
  const overlayUrl=new URL("overlay.html",window.location.href);overlayUrl.searchParams.set("match",jclMatchId);jclOverlayUrl=overlayUrl.href;
  $("overlayLinkValue").value=jclOverlayUrl;
@@ -1087,8 +1103,8 @@ async function listScreen(mode){
   const filtered=rows.filter(d=>(d.AppMode||"normal")===key);
   const title=key==="tournament"?"Tournament History":key==="multiple"?"Multiple Match History":"Match History";
   const multi=key==="multiple";
-  showPanel(title,`${multi?'<div class="guide-step"><b>Multiple Match History:</b> Only matches marked as Multiple Match are shown here. Each completed match is added to the win table.</div><button class="btn green home-action" id="multiNewMatch">＋ Create Another Match</button>'+(window.__JCL_multiResultsHtml?window.__JCL_multiResultsHtml():""):key==="tournament"?'<div class="guide-step">Only tournament matches are shown here. Open a saved match to resume it.</div><button class="btn green home-action" id="createTournamentFromHistory">＋ Create New Tournament</button>':'<div class="guide-step">This history contains regular matches only. Tournament and Multiple Match records are kept in their own sections.</div>'}${filtered.length?filtered.map(d=>`<div class="home-item"><strong>${esc(d.Title||((d.TeamA||"")+" vs "+(d.TeamB||""))||"JCL Match")}</strong><small>${esc(d.TeamA||"")} vs ${esc(d.TeamB||"")} • ${esc(d.Runs??0)}/${esc(d.Wickets??0)} • ${esc(d.Overs||"0.0")} overs<br>Status: ${esc(d.Status||"live")} · Match ID: ${esc(d.id)}</small><button class="btn green" data-open-match="${esc(d.id)}">Open / Resume</button><button class="btn" data-scoreboard="${esc(d.id)}">Open Scoreboard</button><button class="btn" data-copy-overlay="${esc(d.id)}">Copy Overlay Link</button></div>`).join(""):`<p>No ${key==="normal"?"regular":key} matches found yet.</p>`}`);
-  const newBtn=$("multiNewMatch");if(newBtn)newBtn.onclick=()=>{if(localStorage.getItem("jclMultiSession")){prepareNextMultipleMatch();}else{alert("No active Multiple-Match Session found. Use Multiple Matches → Create Multiple Match Session to start a new session.");}};
+  if(multi){showMultiSessionHistory();return;}
+  showPanel(title,`${key==="tournament"?'<div class="guide-step">Only tournament matches are shown here. Open a saved match to resume it.</div><button class="btn green home-action" id="createTournamentFromHistory">＋ Create New Tournament</button>':'<div class="guide-step">This history contains regular matches only. Tournament and Multiple Match records are kept in their own sections.</div>'}${filtered.length?filtered.map(d=>`<div class="home-item"><strong>${esc(d.Title||((d.TeamA||"")+" vs "+(d.TeamB||""))||"JCL Match")}</strong><small>${esc(d.TeamA||"")} vs ${esc(d.TeamB||"")} • ${esc(d.Runs??0)}/${esc(d.Wickets??0)} • ${esc(d.Overs||"0.0")} overs<br>Status: ${esc(d.Status||"live")} · Match ID: ${esc(d.id)}</small><button class="btn green" data-open-match="${esc(d.id)}">Open / Resume</button><button class="btn" data-scoreboard="${esc(d.id)}">Open Scoreboard</button><button class="btn" data-copy-overlay="${esc(d.id)}">Copy Overlay Link</button></div>`).join(""):`<p>No ${key==="normal"?"regular":key} matches found yet.</p>`}`);
   const tourBtn=$("createTournamentFromHistory");if(tourBtn)tourBtn.onclick=()=>showModeLanding("tournament");
   $("homePanelContent").querySelectorAll("[data-open-match]").forEach(b=>b.onclick=()=>window.__JCL_openRemoteMatch(b.dataset.openMatch).catch(e=>alert(e.message)));
   $("homePanelContent").querySelectorAll("[data-scoreboard]").forEach(b=>b.onclick=()=>{location.href="overlay.html?match="+encodeURIComponent(b.dataset.scoreboard)});

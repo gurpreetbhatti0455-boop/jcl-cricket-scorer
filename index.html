@@ -360,6 +360,13 @@ body.home-mode>header,body.home-mode>main,body.home-mode>footer{display:none!imp
 <footer>Cricket Scorer by JCL • Development prototype • Validate scoring rules before official tournament use.</footer>
 <script>
 const $=id=>document.getElementById(id);
+// Classic-script bridge: the scoring/session code runs outside the ES module,
+// so it needs a global panel renderer rather than the module-scoped function.
+window.showPanel=function(title,html){
+ const home=$("jclHome"),panel=$("homePanel"),heading=$("homePanelTitle"),content=$("homePanelContent");
+ if(!home||!panel||!heading||!content)throw new Error("History panel elements are missing from the page.");
+ home.classList.add("hidden");panel.classList.remove("hidden");heading.textContent=title;content.innerHTML=html;
+};
 let lang="en", undoStack=[], manualTarget=null, widePending=false;
 let jclMatchId="", jclOverlayUrl="";
 const words={
@@ -537,8 +544,9 @@ function multiResultsHtml(resultsInput){
  const rows=Object.values(teams).sort((a,b)=>b.won-a.won||b.tied-a.tied||a.team.localeCompare(b.team));
  let html='<div class="multi-results-title">🏏 Multiple Match Results &amp; Team Wins</div>';
  if(!rows.length)return html+'<p>No completed matches in this session yet. Results and win counts will appear here after each match.</p>';
- html+='<div class="multi-results-wrap"><table class="multi-results-table"><thead><tr><th>Team</th><th>Played</th><th>Won</th><th>Lost</th><th>Tied</th></tr></thead><tbody>';
- html+=rows.map(t=>`<tr><td><b>${esc(t.team)}</b></td><td>${t.played}</td><td>${t.won}</td><td>${t.lost}</td><td>${t.tied}</td></tr>`).join('');
+ rows.forEach(t=>{t.points=t.won*2+t.tied;});
+ html+='<div class="multi-results-wrap"><table class="multi-results-table"><thead><tr><th>Team</th><th>Played</th><th>Won</th><th>Lost</th><th>Tied</th><th>Points</th></tr></thead><tbody>';
+ html+=rows.map(t=>`<tr><td><b>${esc(t.team)}</b></td><td>${t.played}</td><td>${t.won}</td><td>${t.lost}</td><td>${t.tied}</td><td><b>${t.points}</b></td></tr>`).join('');
  html+='</tbody></table></div><div class="multi-results-title">Completed Matches</div>';
  html+=results.map((m,i)=>`<div class="home-item"><strong>Match ${esc(m.number||i+1)}: ${esc(m.teamA)} vs ${esc(m.teamB)}</strong><small>${esc(m.scoreA)} • ${esc(m.scoreB)}</small><small>${esc(m.result)} · ${esc(m.date)}</small><small><b>Man of the Match:</b> ${esc(m.manOfMatch||"Not recorded")}</small></div>`).join('');
  return html;
@@ -1107,7 +1115,7 @@ window.__JCL_openRemoteMatch=async(id)=>{
 function showHome(){document.body.classList.add("home-mode");document.body.classList.remove("match-live");$("jclHome").classList.remove("hidden");$("homePanel").classList.add("hidden");$("mainMenuBtn").classList.add("hidden");}
 function showScorer(){updateMultipleModeBadge();document.body.classList.remove("home-mode");$("jclHome").classList.add("hidden");$("homePanel").classList.add("hidden");$("mainMenuBtn").classList.remove("hidden");}
 window.__JCL_showHome=showHome;
-function showPanel(title,html){$("jclHome").classList.add("hidden");$("homePanel").classList.remove("hidden");$("homePanelTitle").textContent=title;$("homePanelContent").innerHTML=html;}
+function showPanel(title,html){$("jclHome").classList.add("hidden");$("homePanel").classList.remove("hidden");$("homePanelTitle").textContent=title;$("homePanelContent").innerHTML=html;window.showPanel=showPanel;}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function showModeLanding(mode){
  const isTournament=mode==="tournament";

@@ -382,7 +382,8 @@ return {version:3,playerCount:Math.max(1,Math.min(11,pc)),matchName:$("matchName
 let state=freshState();
 let pendingBowlerSelection=false;
 function clone(x){return JSON.parse(JSON.stringify(x))}
-function pushUndo(){undoStack.push(clone(state));if(undoStack.length>150)undoStack.shift()}
+// Keep only the last 12 actions (approximately two overs) to reduce repeated full-state snapshots.
+function pushUndo(){undoStack.push(clone(state));if(undoStack.length>12)undoStack.splice(0,undoStack.length-12)}
 function cur(){return state.current}
 function bowl(){let c=cur();if(!c.bowlers[c.bowler])c.bowlers[c.bowler]={name:c.bowler,legal:0,runs:0,wickets:0,wides:0,noBalls:0};return c.bowlers[c.bowler]}
 function addBatRuns(n){
@@ -639,11 +640,15 @@ if(state.inningsNo===2&&state.innings.length){
   $("status").textContent=getMatchResult();
  }
 }
-let batTeam=state.teams[c.batting],bowlTeam=state.teams[1-c.batting],target=manualTarget||(state.innings.length?state.innings[0].runs+1:null);
+let batTeam=state.teams[c.batting],bowlTeam=state.teams[1-c.batting],target=manualTarget||(state.manualTarget>0?Number(state.manualTarget):(state.innings.length?state.innings[0].runs+1:null));
 const inningsOrdinal=state.inningsNo===1?"1st Innings":"2nd Innings";
 $("inningsLabel").textContent=`${inningsOrdinal} • ${batTeam}`;
 if(state.status==="innings-complete")$("status").textContent=state.inningsNo===1?"Innings complete. Tap any run button to enter the second innings players.":"Second innings complete. Match finished.";
-$("score").textContent=`${c.runs}/${c.wickets}`;$("oversText").textContent=`${overs(c)} ${tr("overs")} • ${c.legalBalls} ${tr("legal")}`;$("rr").textContent=`${tr("rr")} ${rr(c).toFixed(2)}`;$("target").textContent=target?`${tr("target")} ${target} • Need ${Math.max(0,target-c.runs)}`:`${tr("target")} —`;
+const ballsRemaining=Math.max(0,(Number(state.maxOvers)||20)*6-(Number(c.legalBalls)||0));
+const runsNeeded=target?Math.max(0,Number(target)-(Number(c.runs)||0)):0;
+const requiredRate=ballsRemaining>0?(runsNeeded/(ballsRemaining/6)).toFixed(2):"—";
+const chaseText=target?`${tr("target")} ${target} • Need ${runsNeeded} off ${ballsRemaining} balls${ballsRemaining>0?` • Req RR ${requiredRate}`:""}`:`${tr("target")} —`;
+$("score").textContent=`${c.runs}/${c.wickets}`;$("oversText").textContent=`${overs(c)} ${tr("overs")} • ${c.legalBalls} ${tr("legal")}`;$("rr").textContent=`${tr("rr")} ${rr(c).toFixed(2)}`;$("target").textContent=chaseText;
 $("oTeam").textContent=batTeam.toUpperCase();$("oOther").textContent=bowlTeam.toUpperCase();$("oScore").textContent=`${c.runs}/${c.wickets}`;$("oOvers").textContent=`${overs(c)} ${tr("overs")}`;$("oMatch").textContent=state.matchName;$("oRR").textContent=`${tr("rr")} ${rr(c).toFixed(2)}`;$("oTarget").textContent=target?`${tr("target")} ${target}`:"";if($("targetNote"))$("targetNote").textContent=target?`${tr("target")}: ${target}`:`${tr("target")}: not set`;
 $("batterRows").innerHTML=c.batters.map((b,i)=>`<tr><td>${esc(b.name)}${i===c.striker?" *":""}<br><span class="tiny">${b.out?(b.dismissal||tr("out")):tr("notOut")}</span></td><td>${b.runs}</td><td>${b.balls}</td><td>${b.fours}</td><td>${b.sixes}</td><td>${b.out?tr("out"):(i===c.striker?tr("striker"):tr("nonStriker"))}</td></tr>`).join("");
 const striker=c.batters[c.striker]||{},nonStriker=c.batters[c.nonStriker]||{},currentBowl=c.bowlers[c.bowler]||{name:c.bowler,legal:0,runs:0,wickets:0,wides:0,noBalls:0};
@@ -783,7 +788,7 @@ $("wideBtn").onclick=()=>{widePending=!widePending;record(widePending?"Wide sele
 $("moreBtn").onclick=()=>$("moreMenu").classList.toggle("hidden");
 $("moreClose").onclick=()=>$("moreMenu").classList.add("hidden");
 $("moreEndMatch").onclick=()=>{$("moreMenu").classList.add("hidden");$("endFirstInningsBtn").textContent=state.inningsNo===1?"End First Innings / Start Second Innings":"End Current Match";$("endMatchBackdrop").classList.remove("hidden")};
-$("moreTarget").onclick=()=>{let v=prompt("Enter target runs (number):",manualTarget||"");if(v!==null&&v.trim()!==""&&Number(v)>0){manualTarget=Number(v);record("Target set to "+manualTarget);render()}};
+$("moreTarget").onclick=()=>{let v=prompt("Enter target runs (number):",manualTarget||state.manualTarget||"");if(v!==null&&v.trim()!==""&&Number(v)>0){manualTarget=Number(v);state.manualTarget=manualTarget;record("Target set to "+manualTarget);render()}};
 $("moreOverthrow").onclick=()=>{let v=prompt("Total runs completed on this delivery, including runs off the bat:", "1");if(v!==null&&Number.isInteger(Number(v))&&Number(v)>=0&&Number(v)<=6){addBatRuns(Number(v));record("Overthrow / completed runs recorded: "+v)}};
 $("wideBtn").onclick=()=>addWide(1);$("noBallBtn").onclick=()=>addNoBall(0);$("byeBtn").onclick=()=>addBye("byes");$("legByeBtn").onclick=()=>addBye("legByes");$("penaltyBtn").onclick=addPenalty;$("retireBtn").onclick=retireBatter;$("liveSwapBtn").onclick=swapEnds;$("changeEnds").onclick=swapEnds;$("endOver").onclick=endOver;$("nextInnings").onclick=nextInnings;
 $("undoBtn").onclick=()=>{if(!undoStack.length){record("Nothing to undo.");return}state=undoStack.pop();record("Last action undone.");render()};
@@ -1051,7 +1056,7 @@ window.__JCL_getFirebasePayload=()=>{
  const c=state.current||{}, battingIndex=Number(c.batting)||0, batting=state.teams[battingIndex]||"Team A", bowling=state.teams[1-battingIndex]||"Team B";
  const legal=Number(c.legalBalls)||0, runs=Number(c.runs)||0, inn=state.inningsNo||1;
  const striker=(c.batters||[])[c.striker]||{}, non=(c.batters||[])[c.nonStriker]||{};
- const target=manualTarget||(inn>1&&state.innings?.[0]?Number(state.innings[0].runs)+1:null);
+ const target=manualTarget||(Number(state.manualTarget)>0?Number(state.manualTarget):(inn>1&&state.innings?.[0]?Number(state.innings[0].runs)+1:null));
  const bowlerStats=(c.bowlers||{})[c.bowler]||{};
  const currentOverNo=Math.floor(legal/6)+1;
  const currentOverBalls=(c.deliveryLog||[]).filter(d=>Number(d.over)===currentOverNo).map(d=>({ball:d.ball,label:d.label,runs:d.runs}));
@@ -1060,7 +1065,7 @@ window.__JCL_getFirebasePayload=()=>{
 };
 window.__JCL_restoreState=(saved,docId,savedUndoStack=[])=>{
  if(!saved||!saved.current)throw new Error("This match does not contain a restorable saved state.");
- state=saved; jclMatchId=docId; undoStack=Array.isArray(savedUndoStack)?savedUndoStack.slice(-150):[]; widePending=false; pendingBowlerSelection=false;
+ state=saved; manualTarget=Number(saved.manualTarget)>0?Number(saved.manualTarget):null; jclMatchId=docId; undoStack=Array.isArray(savedUndoStack)?savedUndoStack.slice(-12):[]; widePending=false; pendingBowlerSelection=false;
  $("teamA").value=state.teams?.[0]||"Team 1"; $("teamB").value=state.teams?.[1]||"Team 2"; $("matchName").value=state.matchName||"JCL Match"; $("matchCountry").value=state.matchCountry||"India"; $("matchState").value=state.matchState||""; $("matchCity").value=state.matchCity||"";
  $("maxOvers").value=String(state.maxOvers||20); $("playerCount").value=String(state.playerCount||11)=== "11"?"11":"manual"; $("manualPlayerCount").value=String(state.playerCount||11); $("manualPlayerCount").classList.toggle("hidden",$("playerCount").value!=="manual"); $("currentBowler").value=state.current.bowler||"Bowler 1";
  const overlayUrl=new URL("overlay.html",window.location.href);overlayUrl.searchParams.set("match",jclMatchId);jclOverlayUrl=overlayUrl.href;

@@ -166,7 +166,7 @@ function render(d){
  const target=targetNum>0?`TARGET ${targetNum} · NEED ${runsNeeded}`:`INNINGS ${inningsNo}`;
  $("target").innerHTML=`${target} · <strong>RR ${Number(d.RunRate||0).toFixed(2)}</strong>`;
  const chaseInfo=$("chaseInfo");
- if(inningsNo>=2 && targetNum>0){
+ if(targetNum>0){
    chaseInfo.hidden=false;
    chaseInfo.innerHTML=`<strong>${runsNeeded} RUNS</strong> NEEDED FROM <strong>${ballsRemaining} BALLS</strong>${ballsRemaining>0?` · REQUIRED RR ${(runsNeeded/(ballsRemaining/6)).toFixed(2)}`:""}`;
  } else { chaseInfo.hidden=true; chaseInfo.textContent=""; }

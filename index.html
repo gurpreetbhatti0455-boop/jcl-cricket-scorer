@@ -325,6 +325,13 @@ body.home-mode>header,body.home-mode>main,body.home-mode>footer{display:none!imp
    <option value="Hit the ball twice">Hit the ball twice</option><option value="Obstructing the field">Obstructing the field</option>
    <option value="Timed out">Timed out</option>
   </select>
+  <div id="runOutRunsField" class="hidden">
+   <label for="runOutCompletedRuns">Completed runs before the run out</label>
+   <select id="runOutCompletedRuns">
+    <option value="0">0 runs completed</option><option value="1">1 run completed</option><option value="2">2 runs completed</option><option value="3">3 runs completed</option><option value="4">4 runs completed</option><option value="5">5 runs completed</option><option value="6">6 runs completed</option>
+   </select>
+   <p class="muted">Example: if the batters completed 1 run and the batter was run out while trying for the second, select 1.</p>
+  </div>
   <div id="fielderFields"><label for="fielderName">Fielder name (for catch / run out / stumping)</label><input id="fielderName" placeholder="Enter fielder name (optional)"></div>
   <label for="nextBatterName">Next batter name</label><input id="nextBatterName" placeholder="Type next batter's name">
   <button id="confirmWicketBtn" class="btn red run-popup-cancel">Confirm wicket</button>
@@ -891,6 +898,8 @@ function openWicketDialog(){
  sel.innerHTML=c.batters.map((b,i)=>!b.out?`<option value="${i}" ${i===c.striker?"selected":""}>${esc(b.name)}${i===c.striker?" (striker)":" (non-striker)"}</option>`:"").join("");
  $("nextBatterName").value=$("newBatter").value.trim();
  $("fielderName").value="";
+ $("runOutCompletedRuns").value="0";
+ $("runOutRunsField").classList.toggle("hidden",$("dismissalType").value!=="Run out");
  $("wicketBackdrop").classList.remove("hidden");
 }
 function closeWicketDialog(){$("wicketBackdrop").classList.add("hidden")}
@@ -899,12 +908,22 @@ function confirmWicket(){
  const outBatter=c.batters[outIndex];
  if(!outBatter||outBatter.out){alert("Please select a batter who is not out.");return}
  const fielder=$("fielderName").value.trim(),nextName=$("nextBatterName").value.trim();
- pushUndo();outBatter.out=true;outBatter.dismissal=type+(fielder?` (${fielder})`:"");
+ const completedRuns=type==="Run out"?Math.max(0,Math.min(6,Number($("runOutCompletedRuns").value)||0)):0;
+ const strikerAtDelivery=c.batters[c.striker];
+ pushUndo();
+ // Count any runs completed before a run-out. These runs belong to the team and are credited to the striker for this delivery.
+ if(completedRuns){
+  c.runs+=completedRuns;
+  c.partnership+=completedRuns;
+  if(strikerAtDelivery)strikerAtDelivery.runs+=completedRuns;
+  bowl().runs+=completedRuns;
+ }
+ outBatter.out=true;outBatter.dismissal=type+(fielder?` (${fielder})`:"");
  c.partnerships=c.partnerships||[];c.fallOfWickets=c.fallOfWickets||[];
  c.partnerships.push({wicket:c.wickets+1,runs:c.partnership,batters:c.batters.filter(b=>!b.out).slice(-2).map(b=>b.name).join(" & ")});
  c.wickets++;c.fallOfWickets.push({wicket:c.wickets,score:c.runs,overs:`${Math.floor(c.legalBalls/6)}.${c.legalBalls%6}`,batter:outBatter.name,dismissal:outBatter.dismissal,fielder});bowl().wickets++;c.partnership=0;
- // Run-outs and timed-out dismissals do not necessarily count as a legal ball in all situations; this basic flow treats this as a normal legal wicket delivery.
- const before=c.legalBalls; c.ballsFaced++; legalDelivery(); logDelivery("W",0,before);
+ // This scoring flow treats a wicket delivery as a legal ball.
+ const before=c.legalBalls; c.ballsFaced++; legalDelivery(); logDelivery(completedRuns?`W+${completedRuns}`:"W",completedRuns,before);
  if(nextName && c.wickets<Math.max(1,(Number(state.playerCount)||11)-1)){
   const next={name:nextName,runs:0,balls:0,fours:0,sixes:0,out:false};
   const wasStriker=outIndex===c.striker;
@@ -960,6 +979,10 @@ function showFullHistory(){
  $("historyBackdrop").classList.remove("hidden");
 }
 $("wicketBtn").onclick=openWicketDialog;
+$("dismissalType").addEventListener("change",()=>{
+ $("runOutRunsField").classList.toggle("hidden",$("dismissalType").value!=="Run out");
+ if($("dismissalType").value!=="Run out")$("runOutCompletedRuns").value="0";
+});
 $("confirmWicketBtn").onclick=confirmWicket;
 $("cancelWicketBtn").onclick=closeWicketDialog;
 $("dismissalType").addEventListener("change",()=>{

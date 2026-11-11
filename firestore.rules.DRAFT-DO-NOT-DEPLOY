@@ -1,0 +1,37 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function verifiedPhone() { return signedIn() && request.auth.token.phone_number != null; }
+    function phoneMatchesTeam(data) {
+      return verifiedPhone() && request.auth.token.phone_number in data.authorizedPhones;
+    }
+    match /UserProfiles/{uid} {
+      allow create, read, update, delete: if signedIn() && request.auth.uid == uid;
+    }
+    match /Teams/{teamId} {
+      allow create: if verifiedPhone()
+        && request.resource.data.captainUid == request.auth.uid
+        && request.resource.data.captainPhone == request.auth.token.phone_number
+        && request.auth.token.phone_number in request.resource.data.authorizedPhones;
+      allow read: if phoneMatchesTeam(resource.data);
+      allow update: if phoneMatchesTeam(resource.data)
+        && request.resource.data.teamId == resource.data.teamId
+        && request.resource.data.captainUid == resource.data.captainUid
+        && request.resource.data.captainPhone == resource.data.captainPhone
+        && request.resource.data.authorizedPhones == resource.data.authorizedPhones;
+      allow delete: if verifiedPhone() && request.auth.uid == resource.data.captainUid;
+    }
+    match /Matches/{matchId} {
+      allow read: if signedIn() && resource.data.OwnerUid == request.auth.uid;
+      allow create: if signedIn() && request.resource.data.OwnerUid == request.auth.uid;
+      allow update: if signedIn() && resource.data.OwnerUid == request.auth.uid && request.resource.data.OwnerUid == request.auth.uid;
+      allow delete: if signedIn() && resource.data.OwnerUid == request.auth.uid;
+    }
+    match /PublicMatches/{matchId} {
+      allow read: if true;
+      allow create, update: if signedIn();
+      allow delete: if false;
+    }
+  }
+}

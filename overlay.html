@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<!-- JCL overlay build: batting/bowling labels + match result scorecards | 2026-10-12-r2 -->
+<!-- JCL overlay build: compact blue broadcast strip + live match ticker | 2026-11-11 -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -22,7 +22,7 @@
 
 /* Large boundary banner overlays the full lower-third scoreboard briefly. */
 .boundary-banner{position:fixed;left:1%;right:1%;bottom:2.2%;height:clamp(112px,24vh,190px);z-index:25;display:flex;align-items:center;justify-content:center;gap:clamp(12px,3vw,36px);background:linear-gradient(105deg,rgba(4,13,25,.94),rgba(12,29,48,.88));border:3px solid #ffd166;clip-path:polygon(1.2% 0,100% 0,98.7% 100%,0 100%);box-shadow:0 0 35px #ffd16655,0 5px 24px #000b;text-align:center;opacity:0;visibility:hidden;pointer-events:none;transform:scale(.96);transition:opacity .15s ease,transform .15s ease}
-.boundary-banner.show{opacity:1;visibility:visible;transform:scale(1)}
+.boundary-banner.show{opacity:1;visibility:visible;transform:scale(1)}.boundary-banner.intro{border-color:#ffb24a}.boundary-banner.intro .boundary-word{color:#ffb24a}
 .boundary-banner .boundary-word{font-family:'Oswald',Inter,sans-serif;font-size:clamp(64px,13vw,170px);font-weight:700;line-height:.9;letter-spacing:2px;color:#ffd166;text-shadow:0 3px 0 #8a4a00,0 0 22px #ffd166aa}
 .boundary-banner .boundary-sub{font-size:clamp(12px,2.1vw,24px);font-weight:900;letter-spacing:clamp(2px,.6vw,7px);color:#fff;text-transform:uppercase}
 .boundary-banner.six{border-color:#42c7ff;box-shadow:0 0 40px #42c7ff77,0 5px 24px #000b}
@@ -60,6 +60,25 @@
 .match-finish.show{display:block}.finish-title{font-size:clamp(18px,3vw,32px);font-weight:1000;color:#ffd166;letter-spacing:1px}.finish-result{font-size:clamp(24px,4.2vw,46px);font-family:Oswald,Inter,Arial,sans-serif;font-weight:1000;line-height:1.12;color:#ffd166;text-shadow:0 2px 0 #754b00,0 0 18px #ffd16655;margin:10px 0 18px;text-transform:uppercase}.finish-innings{margin:12px 0;padding:10px;border:1px solid #ffffff30;border-radius:8px;text-align:left;background:#ffffff08}.finish-innings h3{font-size:clamp(13px,1.5vw,18px);margin:0 0 8px;color:#ffd166}.finish-table{width:100%;border-collapse:collapse;font-size:clamp(9px,1vw,12px)}.finish-table th,.finish-table td{padding:5px 4px;border-bottom:1px solid #ffffff25;text-align:left}.finish-table th{color:#ffd166}.finish-score{font-size:clamp(22px,3vw,34px);font-weight:1000;margin-bottom:8px}.finish-caption{font-size:11px;color:#c8d7e6;margin-top:8px}
 @media(max-width:600px){.match-finish{inset:4% 2%;max-height:86vh;padding:9px}.finish-innings{padding:7px;margin:7px 0}.finish-table th,.finish-table td{padding:3px 2px}}
 
+
+/* JCL compact blue broadcast strip — reference-matched proportions */
+:root{--gold:#ff9f32;--gold2:#ffb34d;--muted:#e3edf8;--line:#ffffff35;--red:#ef633f;--blue:#287bc4}
+.topbar,.state{display:none!important}
+.lower{left:9.6%;right:9.6%;bottom:2%;height:clamp(58px,11vh,88px);min-height:0;max-height:12vh;grid-template-columns:minmax(0,1.12fr) minmax(0,1.38fr) minmax(0,1.05fr);background:linear-gradient(105deg,#062e72 0%,#0752a2 48%,#073879 100%);border:0;border-top:0;clip-path:none;box-shadow:0 2px 12px #0008;text-shadow:none}
+.center{grid-column:1;grid-row:1;background:linear-gradient(110deg,#06418d,#0b58a7);padding:5px 12px;gap:2px;border:0}
+.batters{grid-column:2;grid-row:1;background:linear-gradient(110deg,#084b98,#063a7c);padding:5px 12px;gap:3px;border-left:1px solid #ffffff42;border-right:1px solid #ffffff42}
+.bowling{grid-column:3;grid-row:1;background:linear-gradient(110deg,#073d82,#062f68);padding:5px 12px;gap:3px;border:0}
+.lower:before,.center:after{display:none}
+.teams{display:none}.scoreline{justify-content:flex-start;gap:10px}.score{font-size:clamp(24px,3.1vw,42px);line-height:.95;color:#ff9c35;text-shadow:none}.overs{font-size:clamp(10px,1.1vw,15px);color:#fff}.target{font-size:clamp(8px,.85vw,11px);line-height:1.1;color:#f2f6ff}#chaseInfo{display:block!important;background:transparent;border:0;padding:0;margin-top:1px;font-size:clamp(8px,.82vw,11px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#chaseInfo[hidden]{display:none!important}
+.center-bottom{font-size:clamp(7px,.75vw,9px);gap:5px;color:#fff;line-height:1.1}.center-bottom #inningsInfo{display:none}
+.section-label{font-size:clamp(7px,.72vw,9px);letter-spacing:.6px;color:#ffd18c;margin:0}.player-name{font-size:clamp(10px,1.15vw,15px);font-weight:800}.player-stat{font-size:clamp(10px,1.1vw,14px)}.player-sub{display:none}.bowler-name{font-size:clamp(10px,1.2vw,16px);font-weight:800}.bowler-figures{font-size:clamp(8px,.82vw,11px);line-height:1.1}.ball-head{gap:4px}.ball{min-width:clamp(12px,1.35vw,17px);height:clamp(12px,1.35vw,17px);font-size:clamp(6px,.65vw,8px);background:#eaf2ff}.over-label{font-size:clamp(7px,.7vw,9px)}
+/* Brief event/update toast sits just above the stable scoreboard; it never covers it. */
+.boundary-banner{left:9.6%;right:9.6%;bottom:calc(2% + clamp(58px,11vh,88px) + 5px);height:clamp(23px,3.2vh,34px);min-height:0;padding:2px 8px;gap:8px;border:1px solid #f5b84b;border-radius:2px;clip-path:none;background:linear-gradient(100deg,#063879f2,#0757a8f2);box-shadow:0 2px 8px #0007;transform:none}
+.boundary-banner .boundary-word{font-size:clamp(15px,1.8vw,24px);line-height:1;color:#ffb24a;text-shadow:none;letter-spacing:.5px}.boundary-banner .boundary-sub{font-size:clamp(8px,.85vw,11px);letter-spacing:.5px}.boundary-banner.six{border-color:#7bd9ff}.boundary-banner.six .boundary-word{color:#8be0ff;text-shadow:none}.boundary-banner.wicket{border-color:#ff7b7b}.boundary-banner.wicket .boundary-word{color:#ff9b9b;text-shadow:none}.boundary-banner.milestone .boundary-word{font-size:clamp(15px,1.8vw,24px)}
+.over-card{left:9.6%;right:9.6%;bottom:calc(2% + clamp(58px,11vh,88px) + 5px);padding:4px 8px;border:1px solid #ffb24a;clip-path:none;background:linear-gradient(100deg,#063879f2,#0757a8f2);box-shadow:0 2px 8px #0007}
+.over-card .oc-title{font-size:8px;letter-spacing:.6px}.over-card .oc-score{display:inline;font-size:18px;margin:0 8px}.over-card .oc-meta{display:inline;font-size:9px}.oc-table,.oc-foot{display:none}
+@media(max-width:700px){.lower{left:4%;right:4%;height:clamp(54px,10vh,72px);max-height:11vh;grid-template-columns:minmax(0,1.05fr) minmax(0,1.25fr) minmax(0,.95fr)}.center,.batters,.bowling{padding:4px 6px}.score{font-size:clamp(20px,3.8vw,30px)}.player-name,.bowler-name{font-size:clamp(9px,1.7vw,12px)}.player-stat{font-size:clamp(9px,1.6vw,12px)}.bowler-figures{font-size:8px}.boundary-banner,.over-card{left:4%;right:4%;bottom:calc(2% + clamp(54px,10vh,72px) + 4px)}}
+@media(max-width:460px){.lower{left:2%;right:2%;height:58px;max-height:9vh;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr) minmax(0,.9fr)}.center,.batters,.bowling{padding:3px 4px}.score{font-size:20px}.overs{font-size:8px}.target,#chaseInfo{font-size:6.5px}.section-label{font-size:6px}.player-name,.bowler-name{font-size:8px}.player-stat{font-size:8px}.bowler-figures{font-size:6.5px}.ball{min-width:11px;height:11px;font-size:6px}.boundary-banner,.over-card{left:2%;right:2%;bottom:calc(2% + 58px + 4px)}}
 </style>
 </head>
 <body>
@@ -98,7 +117,7 @@ const firebaseConfig={apiKey:"AIzaSyDta_AAwNpU-9OAWtVgYGhB-GmGaZZFLsI",authDomai
 const $=id=>document.getElementById(id);const matchId=new URLSearchParams(location.search).get("match");
 const safe=(v,fallback="—")=>v===undefined||v===null||v===""?fallback:String(v);
 function ballClass(label){const s=String(label||"").toUpperCase();if(s==="W"||s.includes("WICKET"))return"wicket";if(s==="4"||s==="6"||s.startsWith("4")||s.startsWith("6"))return"boundary";if(/WD|NB|B|LB|PEN/.test(s))return"extra";return""}
-let previousSnapshot=null;let boundaryTimer=null;let overCardTimer=null;let finishDelayTimer=null;let completedMatchId=null;
+let previousSnapshot=null;let boundaryTimer=null;let overCardTimer=null;let finishDelayTimer=null;let completedMatchId=null;let introShown=false;
 function showBoundaryBanner(kind, milestoneRuns=0, batterName=""){
  const el=$("boundaryBanner");el.classList.remove("four","six","wicket","milestone","show");void el.offsetWidth;
  el.classList.add(kind);
@@ -152,6 +171,7 @@ function detectEvents(d){
  previousSnapshot=d;
 }
 function render(d){
+ if(!introShown){introShown=true;if(d.Toss){const tossText=String(d.Toss);const el=$("boundaryBanner");el.classList.remove("four","six","wicket","milestone","show");el.classList.add("intro");$("boundaryWord").textContent="MATCH START";$("boundarySub").textContent=tossText.toUpperCase();el.classList.add("show");clearTimeout(boundaryTimer);boundaryTimer=setTimeout(()=>el.classList.remove("show"),3200);}}
  detectEvents(d);
  const batting=safe(d.BattingTeam,d.TeamA||"Batting"),bowling=safe(d.BowlingTeam,d.TeamB||"Bowling");
  // Broadcast layout: active batting team is always blue on the left; bowling team is red on the right.

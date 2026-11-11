@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<!-- JCL build: separated histories + multiple-match win table | 2026-10-12-r2 -->
+<!-- JCL build: phone OTP + profile + teams beta | 2026-11-06-r1 -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -136,9 +136,19 @@ header{background:#456b8a!important;border-bottom-color:#385a76!important}
 <section id="jclHome" class="home-shell">
  <div class="home-card">
   <div class="home-logo">🏏</div><h1>JCL CRICKET SCORER</h1><p class="home-sub">Live scoring • Match management</p>
-  <div id="googleSignInArea"><p>Sign in with your Google account to save and access your matches.</p><button id="googleSignInBtn" class="btn green home-action">Continue with Google</button></div>
+  <div id="phoneSignInArea">
+   <p>Sign in with your mobile number. We’ll send you an OTP.</p>
+   <label for="loginPhone">Mobile number</label><input id="loginPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+91 9876543210">
+   <div id="recaptcha-container"></div>
+   <button id="sendOtpBtn" class="btn green home-action">Send OTP</button>
+   <div id="otpEntryArea" class="hidden"><label for="loginOtp">Enter OTP</label><input id="loginOtp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6-digit OTP"><button id="verifyOtpBtn" class="btn green home-action">Verify & Sign in</button></div>
+  </div>
   <div id="homeActions" class="hidden">
-   <div class="signed-row"><span id="signedInLabel">Signed in</span><button id="signOutBtn" class="btn soft">Sign out</button></div>
+   <div class="signed-row"><div style="display:flex;align-items:center;gap:9px"><img id="homeAvatar" alt="Profile photo" style="width:42px;height:42px;border-radius:50%;object-fit:cover;display:none"><span id="signedInLabel">Signed in</span></div><button id="signOutBtn" class="btn soft">Sign out</button></div>
+   <button id="homeProfile" class="btn home-action">👤 My Profile</button>
+   <button id="homeCreateTeam" class="btn home-action">🏏 Create Team</button>
+   <button id="homeMyTeams" class="btn home-action">🛡️ My Teams</button>
+   <button id="homeJoinTeam" class="btn home-action">🔗 Open Team Invite</button>
    <button id="homeNewMatch" class="btn green home-action">＋ New Match</button>
    <button id="homeMultipleMatches" class="btn home-action">▦ Multiple Matches</button>
    <button id="homeHistory" class="btn home-action">◷ Match History</button>
@@ -158,7 +168,7 @@ header{background:#456b8a!important;border-bottom-color:#385a76!important}
 .signed-row{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;color:#647383;margin-bottom:12px;text-align:left}
 .home-item{border:1px solid #dce3e9;border-radius:12px;padding:12px;margin:10px 0;text-align:left}
 .home-item strong{display:block;font-size:15px}.home-item small{display:block;color:#687786;margin:4px 0 10px;overflow-wrap:anywhere}
-.home-item .btn{margin:4px 4px 0 0}.guide-step{text-align:left;background:#f5f8fa;border-radius:10px;padding:12px;margin:8px 0;line-height:1.5;font-size:14px}
+.home-item .btn{margin:4px 4px 0 0}textarea{width:100%;border:1px solid #344c68;border-radius:10px;padding:11px;font:inherit;font-size:14px;resize:vertical}#recaptcha-container{margin:10px auto;display:flex;justify-content:center}.guide-step{text-align:left;background:#f5f8fa;border-radius:10px;padding:12px;margin:8px 0;line-height:1.5;font-size:14px}
 body.home-mode>header,body.home-mode>main,body.home-mode>footer{display:none!important}
 @media(min-width:700px){.home-shell{align-items:center}}
 </style>
@@ -325,15 +335,8 @@ body.home-mode>header,body.home-mode>main,body.home-mode>footer{display:none!imp
    <option value="Hit the ball twice">Hit the ball twice</option><option value="Obstructing the field">Obstructing the field</option>
    <option value="Timed out">Timed out</option>
   </select>
-  <div id="runOutRunsField" class="hidden">
-   <label for="runOutCompletedRuns">Completed runs before the run out</label>
-   <select id="runOutCompletedRuns">
-    <option value="0">0 runs completed</option><option value="1">1 run completed</option><option value="2">2 runs completed</option><option value="3">3 runs completed</option><option value="4">4 runs completed</option><option value="5">5 runs completed</option><option value="6">6 runs completed</option>
-   </select>
-   <p class="muted">Example: if the batters completed 1 run and the batter was run out while trying for the second, select 1.</p>
-  </div>
   <div id="fielderFields"><label for="fielderName">Fielder name (for catch / run out / stumping)</label><input id="fielderName" placeholder="Enter fielder name (optional)"></div>
-  <label for="nextBatterName">Next batter name</label><input id="nextBatterName" placeholder="Type next batter's name">
+  <label for="nextBatterName">Next batter (select/type name)</label><input id="nextBatterName" placeholder="Choose a team player or type a name"><button type="button" class="btn soft" id="addOtherBatterBtn">＋ Add another player</button><p class="muted">If the player is not in the team list, enter the name here for this match.</p>
   <button id="confirmWicketBtn" class="btn red run-popup-cancel">Confirm wicket</button>
   <button id="cancelWicketBtn" class="btn run-popup-cancel">Cancel</button>
  </div>
@@ -389,8 +392,7 @@ return {version:3,playerCount:Math.max(1,Math.min(11,pc)),matchName:$("matchName
 let state=freshState();
 let pendingBowlerSelection=false;
 function clone(x){return JSON.parse(JSON.stringify(x))}
-// Keep only the last 12 actions (approximately two overs) to reduce repeated full-state snapshots.
-function pushUndo(){undoStack.push(clone(state));if(undoStack.length>12)undoStack.splice(0,undoStack.length-12)}
+function pushUndo(){undoStack.push(clone(state));if(undoStack.length>150)undoStack.shift()}
 function cur(){return state.current}
 function bowl(){let c=cur();if(!c.bowlers[c.bowler])c.bowlers[c.bowler]={name:c.bowler,legal:0,runs:0,wickets:0,wides:0,noBalls:0};return c.bowlers[c.bowler]}
 function addBatRuns(n){
@@ -647,15 +649,11 @@ if(state.inningsNo===2&&state.innings.length){
   $("status").textContent=getMatchResult();
  }
 }
-let batTeam=state.teams[c.batting],bowlTeam=state.teams[1-c.batting],target=manualTarget||(state.manualTarget>0?Number(state.manualTarget):(state.innings.length?state.innings[0].runs+1:null));
+let batTeam=state.teams[c.batting],bowlTeam=state.teams[1-c.batting],target=manualTarget||(state.innings.length?state.innings[0].runs+1:null);
 const inningsOrdinal=state.inningsNo===1?"1st Innings":"2nd Innings";
 $("inningsLabel").textContent=`${inningsOrdinal} • ${batTeam}`;
 if(state.status==="innings-complete")$("status").textContent=state.inningsNo===1?"Innings complete. Tap any run button to enter the second innings players.":"Second innings complete. Match finished.";
-const ballsRemaining=Math.max(0,(Number(state.maxOvers)||20)*6-(Number(c.legalBalls)||0));
-const runsNeeded=target?Math.max(0,Number(target)-(Number(c.runs)||0)):0;
-const requiredRate=ballsRemaining>0?(runsNeeded/(ballsRemaining/6)).toFixed(2):"—";
-const chaseText=target?`${tr("target")} ${target} • Need ${runsNeeded} off ${ballsRemaining} balls${ballsRemaining>0?` • Req RR ${requiredRate}`:""}`:`${tr("target")} —`;
-$("score").textContent=`${c.runs}/${c.wickets}`;$("oversText").textContent=`${overs(c)} ${tr("overs")} • ${c.legalBalls} ${tr("legal")}`;$("rr").textContent=`${tr("rr")} ${rr(c).toFixed(2)}`;$("target").textContent=chaseText;
+$("score").textContent=`${c.runs}/${c.wickets}`;$("oversText").textContent=`${overs(c)} ${tr("overs")} • ${c.legalBalls} ${tr("legal")}`;$("rr").textContent=`${tr("rr")} ${rr(c).toFixed(2)}`;$("target").textContent=target?`${tr("target")} ${target} • Need ${Math.max(0,target-c.runs)}`:`${tr("target")} —`;
 $("oTeam").textContent=batTeam.toUpperCase();$("oOther").textContent=bowlTeam.toUpperCase();$("oScore").textContent=`${c.runs}/${c.wickets}`;$("oOvers").textContent=`${overs(c)} ${tr("overs")}`;$("oMatch").textContent=state.matchName;$("oRR").textContent=`${tr("rr")} ${rr(c).toFixed(2)}`;$("oTarget").textContent=target?`${tr("target")} ${target}`:"";if($("targetNote"))$("targetNote").textContent=target?`${tr("target")}: ${target}`:`${tr("target")}: not set`;
 $("batterRows").innerHTML=c.batters.map((b,i)=>`<tr><td>${esc(b.name)}${i===c.striker?" *":""}<br><span class="tiny">${b.out?(b.dismissal||tr("out")):tr("notOut")}</span></td><td>${b.runs}</td><td>${b.balls}</td><td>${b.fours}</td><td>${b.sixes}</td><td>${b.out?tr("out"):(i===c.striker?tr("striker"):tr("nonStriker"))}</td></tr>`).join("");
 const striker=c.batters[c.striker]||{},nonStriker=c.batters[c.nonStriker]||{},currentBowl=c.bowlers[c.bowler]||{name:c.bowler,legal:0,runs:0,wickets:0,wides:0,noBalls:0};
@@ -795,7 +793,7 @@ $("wideBtn").onclick=()=>{widePending=!widePending;record(widePending?"Wide sele
 $("moreBtn").onclick=()=>$("moreMenu").classList.toggle("hidden");
 $("moreClose").onclick=()=>$("moreMenu").classList.add("hidden");
 $("moreEndMatch").onclick=()=>{$("moreMenu").classList.add("hidden");$("endFirstInningsBtn").textContent=state.inningsNo===1?"End First Innings / Start Second Innings":"End Current Match";$("endMatchBackdrop").classList.remove("hidden")};
-$("moreTarget").onclick=()=>{let v=prompt("Enter target runs (number):",manualTarget||state.manualTarget||"");if(v!==null&&v.trim()!==""&&Number(v)>0){manualTarget=Number(v);state.manualTarget=manualTarget;record("Target set to "+manualTarget);render()}};
+$("moreTarget").onclick=()=>{let v=prompt("Enter target runs (number):",manualTarget||"");if(v!==null&&v.trim()!==""&&Number(v)>0){manualTarget=Number(v);record("Target set to "+manualTarget);render()}};
 $("moreOverthrow").onclick=()=>{let v=prompt("Total runs completed on this delivery, including runs off the bat:", "1");if(v!==null&&Number.isInteger(Number(v))&&Number(v)>=0&&Number(v)<=6){addBatRuns(Number(v));record("Overthrow / completed runs recorded: "+v)}};
 $("wideBtn").onclick=()=>addWide(1);$("noBallBtn").onclick=()=>addNoBall(0);$("byeBtn").onclick=()=>addBye("byes");$("legByeBtn").onclick=()=>addBye("legByes");$("penaltyBtn").onclick=addPenalty;$("retireBtn").onclick=retireBatter;$("liveSwapBtn").onclick=swapEnds;$("changeEnds").onclick=swapEnds;$("endOver").onclick=endOver;$("nextInnings").onclick=nextInnings;
 $("undoBtn").onclick=()=>{if(!undoStack.length){record("Nothing to undo.");return}state=undoStack.pop();record("Last action undone.");render()};
@@ -898,8 +896,6 @@ function openWicketDialog(){
  sel.innerHTML=c.batters.map((b,i)=>!b.out?`<option value="${i}" ${i===c.striker?"selected":""}>${esc(b.name)}${i===c.striker?" (striker)":" (non-striker)"}</option>`:"").join("");
  $("nextBatterName").value=$("newBatter").value.trim();
  $("fielderName").value="";
- $("runOutCompletedRuns").value="0";
- $("runOutRunsField").classList.toggle("hidden",$("dismissalType").value!=="Run out");
  $("wicketBackdrop").classList.remove("hidden");
 }
 function closeWicketDialog(){$("wicketBackdrop").classList.add("hidden")}
@@ -908,22 +904,12 @@ function confirmWicket(){
  const outBatter=c.batters[outIndex];
  if(!outBatter||outBatter.out){alert("Please select a batter who is not out.");return}
  const fielder=$("fielderName").value.trim(),nextName=$("nextBatterName").value.trim();
- const completedRuns=type==="Run out"?Math.max(0,Math.min(6,Number($("runOutCompletedRuns").value)||0)):0;
- const strikerAtDelivery=c.batters[c.striker];
- pushUndo();
- // Count any runs completed before a run-out. These runs belong to the team and are credited to the striker for this delivery.
- if(completedRuns){
-  c.runs+=completedRuns;
-  c.partnership+=completedRuns;
-  if(strikerAtDelivery)strikerAtDelivery.runs+=completedRuns;
-  bowl().runs+=completedRuns;
- }
- outBatter.out=true;outBatter.dismissal=type+(fielder?` (${fielder})`:"");
+ pushUndo();outBatter.out=true;outBatter.dismissal=type+(fielder?` (${fielder})`:"");
  c.partnerships=c.partnerships||[];c.fallOfWickets=c.fallOfWickets||[];
  c.partnerships.push({wicket:c.wickets+1,runs:c.partnership,batters:c.batters.filter(b=>!b.out).slice(-2).map(b=>b.name).join(" & ")});
  c.wickets++;c.fallOfWickets.push({wicket:c.wickets,score:c.runs,overs:`${Math.floor(c.legalBalls/6)}.${c.legalBalls%6}`,batter:outBatter.name,dismissal:outBatter.dismissal,fielder});bowl().wickets++;c.partnership=0;
- // This scoring flow treats a wicket delivery as a legal ball.
- const before=c.legalBalls; c.ballsFaced++; legalDelivery(); logDelivery(completedRuns?`W+${completedRuns}`:"W",completedRuns,before);
+ // Run-outs and timed-out dismissals do not necessarily count as a legal ball in all situations; this basic flow treats this as a normal legal wicket delivery.
+ const before=c.legalBalls; c.ballsFaced++; legalDelivery(); logDelivery("W",0,before);
  if(nextName && c.wickets<Math.max(1,(Number(state.playerCount)||11)-1)){
   const next={name:nextName,runs:0,balls:0,fours:0,sixes:0,out:false};
   const wasStriker=outIndex===c.striker;
@@ -979,10 +965,8 @@ function showFullHistory(){
  $("historyBackdrop").classList.remove("hidden");
 }
 $("wicketBtn").onclick=openWicketDialog;
-$("dismissalType").addEventListener("change",()=>{
- $("runOutRunsField").classList.toggle("hidden",$("dismissalType").value!=="Run out");
- if($("dismissalType").value!=="Run out")$("runOutCompletedRuns").value="0";
-});
+const addOtherBatterBtn=$("addOtherBatterBtn");
+if(addOtherBatterBtn)addOtherBatterBtn.onclick=()=>{const name=prompt("Enter the additional player name:");if(name&&name.trim()){$("nextBatterName").value=name.trim();record(`${name.trim()} added for this match.`);}};
 $("confirmWicketBtn").onclick=confirmWicket;
 $("cancelWicketBtn").onclick=closeWicketDialog;
 $("dismissalType").addEventListener("change",()=>{
@@ -1079,7 +1063,7 @@ window.__JCL_getFirebasePayload=()=>{
  const c=state.current||{}, battingIndex=Number(c.batting)||0, batting=state.teams[battingIndex]||"Team A", bowling=state.teams[1-battingIndex]||"Team B";
  const legal=Number(c.legalBalls)||0, runs=Number(c.runs)||0, inn=state.inningsNo||1;
  const striker=(c.batters||[])[c.striker]||{}, non=(c.batters||[])[c.nonStriker]||{};
- const target=manualTarget||(Number(state.manualTarget)>0?Number(state.manualTarget):(inn>1&&state.innings?.[0]?Number(state.innings[0].runs)+1:null));
+ const target=manualTarget||(inn>1&&state.innings?.[0]?Number(state.innings[0].runs)+1:null);
  const bowlerStats=(c.bowlers||{})[c.bowler]||{};
  const currentOverNo=Math.floor(legal/6)+1;
  const currentOverBalls=(c.deliveryLog||[]).filter(d=>Number(d.over)===currentOverNo).map(d=>({ball:d.ball,label:d.label,runs:d.runs}));
@@ -1088,7 +1072,7 @@ window.__JCL_getFirebasePayload=()=>{
 };
 window.__JCL_restoreState=(saved,docId,savedUndoStack=[])=>{
  if(!saved||!saved.current)throw new Error("This match does not contain a restorable saved state.");
- state=saved; manualTarget=Number(saved.manualTarget)>0?Number(saved.manualTarget):null; jclMatchId=docId; undoStack=Array.isArray(savedUndoStack)?savedUndoStack.slice(-12):[]; widePending=false; pendingBowlerSelection=false;
+ state=saved; jclMatchId=docId; undoStack=Array.isArray(savedUndoStack)?savedUndoStack.slice(-150):[]; widePending=false; pendingBowlerSelection=false;
  $("teamA").value=state.teams?.[0]||"Team 1"; $("teamB").value=state.teams?.[1]||"Team 2"; $("matchName").value=state.matchName||"JCL Match"; $("matchCountry").value=state.matchCountry||"India"; $("matchState").value=state.matchState||""; $("matchCity").value=state.matchCity||"";
  $("maxOvers").value=String(state.maxOvers||20); $("playerCount").value=String(state.playerCount||11)=== "11"?"11":"manual"; $("manualPlayerCount").value=String(state.playerCount||11); $("manualPlayerCount").classList.toggle("hidden",$("playerCount").value!=="manual"); $("currentBowler").value=state.current.bowler||"Bowler 1";
  const overlayUrl=new URL("overlay.html",window.location.href);overlayUrl.searchParams.set("match",jclMatchId);jclOverlayUrl=overlayUrl.href;
@@ -1102,33 +1086,98 @@ render();
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc, getDocs, collection, query, where, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, getDocs, collection, query, where, limit, serverTimestamp, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, signInWithPhoneNumber, RecaptchaVerifier, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 const firebaseConfig={apiKey:"AIzaSyDta_AAwNpU-9OAWtVgYGhB-GmGaZZFLsI",authDomain:"jcl-cricket-scorer.firebaseapp.com",projectId:"jcl-cricket-scorer",storageBucket:"jcl-cricket-scorer.firebasestorage.app",messagingSenderId:"112116011790",appId:"1:112116011790:web:d6d2a4ca7416dce53efd5f",measurementId:"G-DFJ3V8ZCV8"};
-const app=initializeApp(firebaseConfig),db=getFirestore(app),auth=getAuth(app),provider=new GoogleAuthProvider();
-let currentUser=null,lastJson="",busy=false,queued=false;
+const app=initializeApp(firebaseConfig),db=getFirestore(app),auth=getAuth(app),storage=getStorage(app);
+let currentUser=null,lastJson="",busy=false,queued=false,phoneConfirmation=null,recaptchaVerifier=null;
 const $=id=>document.getElementById(id);
-const waitAuth=new Promise(resolve=>onAuthStateChanged(auth,u=>{currentUser=u;window.__JCL_user=u;if(u){document.body.classList.add("home-mode");$("googleSignInArea").classList.add("hidden");$("homeActions").classList.remove("hidden");$("signedInLabel").textContent="Signed in: "+(u.displayName||u.email||"Google account");}else{document.body.classList.add("home-mode");$("googleSignInArea").classList.remove("hidden");$("homeActions").classList.add("hidden");}resolve(u);}));
-// Use popup sign-in on GitHub Pages to avoid redirect-storage issues on mobile browsers.
-$("googleSignInBtn").onclick=async()=>{
-  const btn=$("googleSignInBtn");
-  try{
-    btn.disabled=true;
-    $("homeStatus").textContent="Opening Google sign-in…";
-    provider.setCustomParameters({prompt:"select_account"});
-    const result=await signInWithPopup(auth,provider);
-    currentUser=result.user;
-    window.__JCL_user=currentUser;
-    $("googleSignInArea").classList.add("hidden");
-    $("homeActions").classList.remove("hidden");
-    $("signedInLabel").textContent="Signed in: "+(currentUser.displayName||currentUser.email||"Google account");
-    $("homeStatus").textContent="";
-  }catch(e){
-    console.error("Google popup sign-in error",e);
-    $("homeStatus").textContent="Google sign-in failed: "+(e.code||e.message)+". If a popup was blocked, allow pop-ups for this site and try again.";
-  }finally{btn.disabled=false;}
+const waitAuth=new Promise(resolve=>onAuthStateChanged(auth,u=>{
+ if(u && !u.phoneNumber){signOut(auth).catch(console.error);return;}
+ currentUser=u;window.__JCL_user=u;
+ if(u){document.body.classList.add("home-mode");$("phoneSignInArea").classList.add("hidden");$("homeActions").classList.remove("hidden");$("signedInLabel").textContent="Signed in: "+(u.phoneNumber||u.displayName||"Mobile account");getDoc(doc(db,"UserProfiles",u.uid)).then(ps=>{const photo=ps.exists()?ps.data().photoURL:"";const avatar=$("homeAvatar");if(avatar&&(photo||u.photoURL)){avatar.src=photo||u.photoURL;avatar.style.display="block";}}).catch(console.warn);}
+ else{document.body.classList.add("home-mode");$("phoneSignInArea").classList.remove("hidden");$("homeActions").classList.add("hidden");}
+ resolve(u);
+}));
+function normalPhone(v){let p=String(v||"").replace(/[\s()-]/g,"");if(/^\d{10}$/.test(p))p="+91"+p;return p;}
+function setHomeStatus(msg){const el=$("homeStatus");if(el)el.textContent=msg;}
+$("sendOtpBtn").onclick=async()=>{
+ const btn=$("sendOtpBtn");
+ try{
+  const phone=normalPhone($("loginPhone").value);
+  if(!/^\+[1-9]\d{7,14}$/.test(phone))throw new Error("Enter a valid number with country code, e.g. +91 9876543210.");
+  btn.disabled=true;setHomeStatus("Preparing secure OTP verification…");
+  if(!recaptchaVerifier)recaptchaVerifier=new RecaptchaVerifier(auth,"recaptcha-container",{size:"normal"});
+  await recaptchaVerifier.render();
+  phoneConfirmation=await signInWithPhoneNumber(auth,phone,recaptchaVerifier);
+  $("otpEntryArea").classList.remove("hidden");setHomeStatus("OTP sent. Check your SMS.");
+ }catch(e){console.error("Phone OTP error",e);setHomeStatus("Could not send OTP: "+(e.code||e.message));if(recaptchaVerifier){try{await recaptchaVerifier.clear()}catch(_){}recaptchaVerifier=null;}}
+ finally{btn.disabled=false;}
+};
+$("verifyOtpBtn").onclick=async()=>{
+ const btn=$("verifyOtpBtn");
+ try{const otp=$("loginOtp").value.trim();if(!phoneConfirmation)throw new Error("Tap Send OTP first.");if(!/^\d{6}$/.test(otp))throw new Error("Enter the 6-digit OTP.");btn.disabled=true;await phoneConfirmation.confirm(otp);setHomeStatus("Mobile number verified.");if(new URLSearchParams(location.search).has("teamInvite")){setTimeout(()=>openTeamInvite(),250);}}
+ catch(e){console.error("OTP verification error",e);setHomeStatus("OTP verification failed: "+(e.code||e.message));}
+ finally{btn.disabled=false;}
 };
 $("signOutBtn").onclick=async()=>{try{await signOut(auth);showHome();}catch(e){alert(e.message)}};
+
+const teamCode=()=>("JCL"+Math.random().toString(36).slice(2,6).toUpperCase());
+const phoneOf=u=>normalPhone(u?.phoneNumber||"");
+function escHome(s){return String(s??"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+async function showMyProfile(){
+ await waitAuth;if(!currentUser){alert("Sign in with your mobile number first.");return;}
+ const snap=await getDoc(doc(db,"UserProfiles",currentUser.uid));const d=snap.exists()?snap.data():{};
+ showPanel("My Profile",`<div class="home-item" style="text-align:center">
+ <img id="profileAvatarPreview" src="${escHome(d.photoURL||currentUser.photoURL||"")}" alt="" style="width:96px;height:96px;object-fit:cover;border-radius:50%;background:#e8eef3;${(d.photoURL||currentUser.photoURL)?"":"display:none"}">
+ <div id="profileAvatarFallback" style="font-size:54px;${(d.photoURL||currentUser.photoURL)?"display:none":""}">👤</div>
+ <label for="profilePhotoFile">Profile photo</label><input id="profilePhotoFile" type="file" accept="image/*">
+ <label for="profileDisplayName">Name</label><input id="profileDisplayName" value="${escHome(d.name||currentUser.displayName||"")}" placeholder="Your name" maxlength="60">
+ <label>Verified mobile</label><input value="${escHome(currentUser.phoneNumber||"")}" readonly>
+ <button class="btn green home-action" id="saveProfileBtn">Save Profile</button>
+ <p class="muted">Profile match statistics will populate when match records are linked to this player profile.</p></div><div id="profileStatus" class="status"></div>`);
+ $("saveProfileBtn").onclick=async()=>{const b=$("saveProfileBtn"),status=$("profileStatus");b.disabled=true;try{
+  let photoURL=d.photoURL||currentUser.photoURL||"";const file=$("profilePhotoFile").files[0];
+  if(file){if(!file.type.startsWith("image/"))throw new Error("Choose an image file.");if(file.size>5*1024*1024)throw new Error("Choose a photo smaller than 5 MB.");const path=storageRef(storage,`profilePhotos/${currentUser.uid}/avatar`);await uploadBytes(path,file,{contentType:file.type});photoURL=await getDownloadURL(path);}
+  const name=$("profileDisplayName").value.trim();await setDoc(doc(db,"UserProfiles",currentUser.uid),{uid:currentUser.uid,phoneNumber:currentUser.phoneNumber||"",name,photoURL,updatedAt:serverTimestamp()},{merge:true});if(name)await updateProfile(currentUser,{displayName:name,photoURL});const topAvatar=$("homeAvatar");if(topAvatar&&photoURL){topAvatar.src=photoURL;topAvatar.style.display="block";}status.textContent="Profile saved.";
+ }catch(e){status.textContent="Could not save profile: "+(e.code||e.message);}finally{b.disabled=false;}};
+}
+async function showCreateTeam(){
+ await waitAuth;if(!currentUser){alert("Sign in first.");return;}
+ showPanel("Create Team",`<div class="guide-step">Create a reusable team. The captain and vice-captain use their own verified mobile numbers. Team ID is generated after saving.</div>
+ <label>Team name</label><input id="newTeamName" placeholder="Example: Jalandhar Cricket Club" maxlength="60">
+ <label>Captain mobile (verified)</label><input value="${escHome(currentUser.phoneNumber||"")}" readonly>
+ <label>Vice-captain mobile (optional)</label><input id="vicePhone" type="tel" placeholder="+91 9876543210">
+ <label>Players (one per line: Name, optional mobile)</label><textarea id="teamPlayersText" rows="7" placeholder="Aman Singh, +919876543210&#10;Gurpreet Singh&#10;Rahul Kumar, +919812345678"></textarea>
+ <button class="btn green home-action" id="saveTeamBtn">Create Team & Generate ID</button><div id="teamCreateStatus" class="status"></div>`);
+ $("saveTeamBtn").onclick=async()=>{const b=$("saveTeamBtn"),status=$("teamCreateStatus");b.disabled=true;try{
+  const name=$("newTeamName").value.trim();if(!name)throw new Error("Enter a team name.");const captainPhone=phoneOf(currentUser);if(!captainPhone)throw new Error("Use a verified mobile account.");
+  const vicePhone=normalPhone($("vicePhone").value);if(vicePhone&&!/^\+[1-9]\d{7,14}$/.test(vicePhone))throw new Error("Enter vice-captain phone with country code.");if(vicePhone===captainPhone)throw new Error("Captain and vice-captain numbers must be different.");
+  const players=$("teamPlayersText").value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean).map((line,i)=>{const parts=line.split(",");return {playerId:"PLY"+Date.now().toString(36).toUpperCase()+String(i+1),name:parts[0].trim(),phone:normalPhone(parts.slice(1).join(",").trim())||"",createdAt:Date.now()};});
+  let code=teamCode(),exists=await getDoc(doc(db,"Teams",code));while(exists.exists()){code=teamCode();exists=await getDoc(doc(db,"Teams",code));}
+  await setDoc(doc(db,"Teams",code),{teamId:code,name,captainUid:currentUser.uid,captainPhone,viceCaptainPhone:vicePhone||"",authorizedPhones:[captainPhone,...(vicePhone?[vicePhone]:[])],viceCaptainVerified:false,players,createdAtMs:Date.now(),createdBy:currentUser.uid,updatedAt:serverTimestamp()});
+  const url=new URL(location.href);url.searchParams.set("teamInvite",code);const inviteText=`Join ${name} (${code}) on Cricket Scorer by JCL: ${url.href}`;
+  showPanel("Team Created",`<div class="home-item"><strong>${escHome(name)}</strong><small>Team ID: ${escHome(code)}<br>Players: ${players.length}</small><button class="btn green" id="copyTeamInvite">Copy team invite link</button><button class="btn" id="whatsappTeamInvite">Share on WhatsApp</button></div><p class="muted">The vice-captain must sign in with their own verified number and accept the invite. Do not share account OTPs.</p>`);
+  $("copyTeamInvite").onclick=async()=>{try{await navigator.clipboard.writeText(inviteText);alert("Invite link copied.");}catch(e){prompt("Copy invite link",inviteText);}};
+  $("whatsappTeamInvite").onclick=()=>window.open("https://wa.me/?text="+encodeURIComponent(inviteText),"_blank");
+ }catch(e){status.textContent="Could not create team: "+(e.code||e.message);}finally{b.disabled=false;}};
+}
+async function showMyTeams(){
+ await waitAuth;if(!currentUser){alert("Sign in first.");return;}const phone=phoneOf(currentUser);
+ const snap=await getDocs(query(collection(db,"Teams"),where("authorizedPhones","array-contains",phone),limit(50)));const teams=snap.docs.map(d=>({id:d.id,...d.data()}));
+ showPanel("My Teams",`${teams.length?teams.map(t=>`<div class="home-item"><strong>${escHome(t.name)}</strong><small>Team ID: ${escHome(t.teamId||t.id)} · ${(t.players||[]).length} players<br>Captain: ${escHome(t.captainPhone||"")} · Vice-captain: ${escHome(t.viceCaptainPhone||"Not assigned")}</small><button class="btn green" data-team-open="${escHome(t.id)}">View players</button><button class="btn" data-team-share="${escHome(t.id)}">Share invite</button></div>`).join(""):'<p>No teams linked to this mobile number yet.</p>'}<button class="btn green home-action" id="createTeamFromList">＋ Create Team</button>`);
+ $("createTeamFromList").onclick=showCreateTeam;
+ $("homePanelContent").querySelectorAll("[data-team-open]").forEach(btn=>btn.onclick=()=>{const t=teams.find(x=>x.id===btn.dataset.teamOpen);if(!t)return;showPanel(t.name,`<div class="home-item"><strong>Team ID: ${escHome(t.teamId||t.id)}</strong><small>${(t.players||[]).length} registered players · No fixed 11/20-player limit</small></div>${(t.players||[]).map(p=>`<div class="home-item"><strong>${escHome(p.name)}</strong><small>${p.phone?"Mobile added":"No mobile number"} · ${escHome(p.playerId)}</small></div>`).join("")}<div class="home-item"><label for="extraTeamPlayerName">Add another player</label><input id="extraTeamPlayerName" placeholder="Player name" maxlength="80"><label for="extraTeamPlayerPhone">Player mobile (optional)</label><input id="extraTeamPlayerPhone" type="tel" placeholder="+91 9876543210"><button class="btn green" id="addTeamPlayerBtn">＋ Add player to team</button><div id="addTeamPlayerStatus" class="status"></div></div><button class="btn" id="teamBackList">Back to My Teams</button>`);$("teamBackList").onclick=showMyTeams;const addBtn=$("addTeamPlayerBtn");if(addBtn)addBtn.onclick=async()=>{const status=$("addTeamPlayerStatus"),name=$("extraTeamPlayerName").value.trim(),phone=normalPhone($("extraTeamPlayerPhone").value);if(!name){status.textContent="Enter the player's name.";return;}if(phone&&!/^\+[1-9]\d{7,14}$/.test(phone)){status.textContent="Enter a valid phone with country code.";return;}addBtn.disabled=true;try{const fresh=await getDoc(doc(db,"Teams",t.id));if(!fresh.exists())throw new Error("Team not found.");const existing=fresh.data().players||[];const player={playerId:"PLY"+Date.now().toString(36).toUpperCase(),name,phone,createdAt:Date.now()};await updateDoc(doc(db,"Teams",t.id),{players:[...existing,player],updatedAt:serverTimestamp()});status.textContent="Player added to this team.";setTimeout(showMyTeams,500);}catch(e){status.textContent="Could not add player: "+(e.code||e.message);}finally{addBtn.disabled=false;}};});
+ $("homePanelContent").querySelectorAll("[data-team-share]").forEach(btn=>btn.onclick=async()=>{const t=teams.find(x=>x.id===btn.dataset.teamShare);const url=new URL(location.href);url.searchParams.set("teamInvite",t.id);try{await navigator.clipboard.writeText(url.href);alert("Team invite link copied.");}catch(e){prompt("Copy invite link",url.href);}});
+}
+async function openTeamInvite(){
+ const code=new URLSearchParams(location.search).get("teamInvite");if(!code){const entered=prompt("Enter Team ID:");if(!entered)return;location.href=location.pathname+"?teamInvite="+encodeURIComponent(entered);return;}
+ const snap=await getDoc(doc(db,"Teams",code.toUpperCase()));if(!snap.exists()){alert("Team invite not found.");return;}const t=snap.data();
+ showPanel("Team Invitation",`<div class="home-item"><strong>${escHome(t.name)}</strong><small>Team ID: ${escHome(t.teamId||code)} · ${(t.players||[]).length} players</small><p>Sign in with the vice-captain's verified mobile number to request access.</p><button class="btn green home-action" id="requestTeamAccess">Request team access</button></div>`);
+ $("requestTeamAccess").onclick=async()=>{if(!currentUser){alert("Sign in with your mobile number first, then open the invite again.");return;}const phone=phoneOf(currentUser);if(phone!==normalPhone(t.viceCaptainPhone)){alert("This number is not the invited vice-captain number.");return;}await setDoc(doc(db,"TeamAccessRequests",code+"_"+currentUser.uid),{teamId:code,uid:currentUser.uid,phoneNumber:phone,status:"pending",createdAt:serverTimestamp()});alert("Access request sent. The captain must approve it.");};
+}
+$("homeProfile").onclick=showMyProfile;$("homeCreateTeam").onclick=showCreateTeam;$("homeMyTeams").onclick=showMyTeams;$("homeJoinTeam").onclick=openTeamInvite;
 window.__JCL_publishFirebase=async()=>{
  await waitAuth;const p=window.__JCL_getFirebasePayload?.();if(!p||!p.MatchCode||!currentUser)return;
  const privatePayload={...p,OwnerUid:currentUser.uid,OwnerEmail:currentUser.email||"",CreatedAtMs:window.__JCL_createdAtMs||Date.now(),UpdatedAt:serverTimestamp()};
@@ -1139,16 +1188,16 @@ window.__JCL_publishFirebase=async()=>{
  finally{busy=false;if(queued){queued=false;window.__JCL_publishFirebase();}}
 };
 window.__JCL_listMatches=async(mode)=>{
- await waitAuth;if(!currentUser)throw new Error("Please sign in with Google.");
+ await waitAuth;if(!currentUser)throw new Error("Please sign in with your verified mobile number.");
  let snap;
  if(mode==="live") snap=await getDocs(query(collection(db,"PublicMatches"),where("Status","==","live"),limit(100)));
  else snap=await getDocs(query(collection(db,"Matches"),where("OwnerUid","==",currentUser.uid),limit(100)));
  return snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.CreatedAtMs||0)-(a.CreatedAtMs||0));
 };
 window.__JCL_openRemoteMatch=async(id)=>{
- await waitAuth;if(!currentUser)throw new Error("Please sign in with Google.");
+ await waitAuth;if(!currentUser)throw new Error("Please sign in with your verified mobile number.");
  const snap=await getDoc(doc(db,"Matches",id));if(!snap.exists())throw new Error("Match not found or you do not have permission to resume it.");const d=snap.data();
- if(d.OwnerUid!==currentUser.uid)throw new Error("Only the Google account that created this match can resume scoring. Sign in with that same account on both devices.");
+ if(d.OwnerUid!==currentUser.uid)throw new Error("Only the mobile account that created this match can resume scoring. Sign in with that same verified number on both devices.");
  if(!d.FullState){alert("This match has no saved state yet. Please open it on the original phone and allow it to sync first.");return;}
  window.__JCL_createdAtMs=d.CreatedAtMs||Date.now();window.__JCL_restoreState(d.FullState,id,d.UndoStack||[]);showScorer();
 };
@@ -1158,9 +1207,9 @@ window.__JCL_openSavedScorecard=async(id)=>{
  if(!popup){alert("Please allow pop-ups for this website, then open the scorecard again.");return;}
  popup.document.write("<p style='font-family:Arial;padding:20px'>Loading full scorecard…</p>");
  try{
-  await waitAuth;if(!currentUser)throw new Error("Please sign in with Google.");
+  await waitAuth;if(!currentUser)throw new Error("Please sign in with your verified mobile number.");
   const snap=await getDoc(doc(db,"Matches",id));if(!snap.exists())throw new Error("Match not found or you do not have permission to view it.");
-  const d=snap.data();if(d.OwnerUid!==currentUser.uid)throw new Error("Only the Google account that created this match can view its full scorecard.");
+  const d=snap.data();if(d.OwnerUid!==currentUser.uid)throw new Error("Only the mobile account that created this match can view its full scorecard.");
   if(!d.FullState)throw new Error("This saved match has no full scorecard data yet. Open it on the scoring phone and allow Firebase to sync.");
   const previousState=state;let html="";
   try{state=clone(d.FullState);html=buildPrintableScorecard();}finally{state=previousState;}
@@ -1208,6 +1257,7 @@ $("homeNewMatch").onclick=()=>{localStorage.removeItem("jclMultipleMatchMode");l
 $("homeHistory").onclick=()=>listScreen("history");$("homeMultipleMatches").onclick=()=>showModeLanding("multiple");$("homeBack").onclick=()=>showHome();
 $("homePrism").onclick=()=>showPanel("How to Go Live (PRISM Guide)",`<div class="guide-step"><b>1. Copy the overlay link</b><br>Open JCL Cricket Scorer, open the match you want to stream, and tap <b>Copy Overlay Link</b>. Copy the complete link that starts with <b>https://</b>.</div><div class="guide-step"><b>2. Open PRISM Live Studio</b><br>Open PRISM Live Studio and go to your live-stream setup.</div><div class="guide-step"><b>3. Find Website</b><br>Swipe the source/options row to the left until <b>Website</b> appears, then tap <b>Website</b>.</div><div class="guide-step"><b>4. Paste the link</b><br>Paste the copied <b>HTTPS overlay URL</b> into the Website URL field. Do not paste an HTML file or just the word “HTML”. Enter the title <b>JCL Live Score</b>, then tap <b>Open / Add</b>.</div><div class="guide-step"><b>5. Show the overlay</b><br>When the website source/title appears in the preview, tap it to show the scoreboard on the stream canvas.</div><div class="guide-step"><b>6. Set the size and position</b><br>Switch the stream layout to landscape if needed. Resize and position the overlay so the scorecard is readable without covering the batter or ball. Check the preview before going live.</div><div class="guide-step"><b>7. Start the live stream</b><br>Confirm the score is updating, then start your broadcast in PRISM. Keep JCL Cricket Scorer running while scoring.</div>`);
 $("homeInstructions").onclick=()=>showPanel("Instructions",`<div class="guide-step"><b>1. Single Match</b><br>Tap <b>Create Match</b>, enter both team names, choose the overs and match settings, complete the toss and enter the opening players. Score ball by ball. When the match finishes, you can view the full scorecard or download/print it as a PDF. The regular Match History keeps single matches separate from Multiple Match sessions.</div><div class="guide-step"><b>2. Create a Multiple-Match Session</b><br>Open <b>Multiple Matches</b>, choose <b>Create Multiple Match Session</b>, enter a session name, add all participating teams and select the two teams for Match 1. For example, a three-team session can be named <b>Three Team Tournament</b>. The session name and start date identify this tournament in history.</div><div class="guide-step"><b>3. Play the next match</b><br>Score Match 1 normally. When it finishes, tap <b>Next Match</b> and select the next pair from the same team list. Repeat for Match 2, Match 3 and any further matches. All completed matches are grouped under that same session; their scores and Man of the Match entries are saved separately.</div><div class="guide-step"><b>4. End and resume a session</b><br>Tap <b>End Multiple-Match Session</b> when the tournament is finished. The session moves to <b>Multiple Match History</b>. If you want to continue it later, open its history card and tap <b>Resume Match</b>. The saved match opens again, and you can continue the same session with <b>Next Match</b> instead of creating a new tournament. Create a new session only when you want a separate tournament and a separate points table.</div><div class="guide-step"><b>5. Session history options</b><br>Each session card has <b>Resume Match</b>, <b>Open Scoreboard</b>, <b>Copy Overlay</b> and <b>Point Table</b>. Resume Match reopens scoring. Open Scoreboard lists Match 1, Match 2, Match 3, etc.; choose a match to open its full printable scorecard, including batting, bowling, extras and fall of wickets—not the live overlay. Copy Overlay copies the live scoreboard link for PRISM. Point Table opens the session's standings only when you tap it.</div><div class="guide-step"><b>6. Points table</b><br>A win gives the winning team <b>2 points</b>; a tie gives <b>1 point to each team</b>; a loss gives <b>0 points</b>. The table shows matches played, wins, losses, ties and total points, along with each completed match and its Man of the Match entry.</div><div class="guide-step"><b>7. PRISM Live Studio</b><br>Copy the match's HTTPS Overlay Link from JCL. In PRISM Live Studio, swipe the source row left until <b>Website</b> appears, paste the complete URL (not an HTML file), enter the title <b>JCL Live Score</b>, and tap Open/Add. Tap the website source/title in the preview to place the overlay on the canvas, resize it to fit the landscape stream, check readability, and then start the broadcast.</div>`);
-const oldStart=window.__JCL_publishFirebase;await waitAuth;updateMultipleModeBadge();if(currentUser){$("googleSignInArea").classList.add("hidden");$("homeActions").classList.remove("hidden");}else{document.body.classList.add("home-mode");}
+const oldStart=window.__JCL_publishFirebase;await waitAuth;updateMultipleModeBadge();if(currentUser){$("phoneSignInArea").classList.add("hidden");$("homeActions").classList.remove("hidden");}else{document.body.classList.add("home-mode");}
+if(new URLSearchParams(location.search).has("teamInvite")){if(currentUser)openTeamInvite();else setHomeStatus("Sign in with your mobile number, then open the team invite link again.");}
 </script>
 </body></html>

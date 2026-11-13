@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<!-- JCL build: separated histories + multiple-match win table | 2026-10-12-r2 -->
+<!-- JCL FINAL BUILD: scoring click guard + official logo + delete account | 2026-11-13-r5 -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -235,7 +235,7 @@ body.home-mode>header,body.home-mode>main,body.home-mode>footer{display:none!imp
 <div id="matchResultPanel" class="card hidden" aria-live="polite"></div>
 <div class="delivery-card"><div class="delivery-head"><h2 id="currentOverTitle">Current over</h2><button class="btn soft" id="historyBtn">••• Full history</button></div><div id="deliveryLog" class="delivery-log"><div class="muted">No deliveries in this over yet.</div></div></div>
 
-<div class="runs"><button class="btn runbtn" data-run="0">0</button><button class="btn runbtn" data-run="1">1</button><button class="btn runbtn" data-run="2">2</button><button class="btn runbtn" data-run="3">3</button><button class="btn runbtn" data-run="4">4</button><button class="btn runbtn" data-run="5">5</button><button class="btn runbtn" data-run="6">6</button><button class="btn runbtn" id="moreBtn">•••</button></div>
+<div class="runs"><button type="button" class="btn runbtn" data-run="0">0</button><button type="button" class="btn runbtn" data-run="1">1</button><button type="button" class="btn runbtn" data-run="2">2</button><button type="button" class="btn runbtn" data-run="3">3</button><button type="button" class="btn runbtn" data-run="4">4</button><button type="button" class="btn runbtn" data-run="5">5</button><button type="button" class="btn runbtn" data-run="6">6</button><button class="btn runbtn" id="moreBtn">•••</button></div>
 
 <div class="rowbtn" style="margin-top:9px"><button class="btn red" id="wicketBtn">WICKET</button><button class="btn soft" id="undoBtn">UNDO ↶</button></div>
 <div id="moreMenu" class="card hidden" style="margin-top:10px;padding:12px">
@@ -825,7 +825,7 @@ $("confirmTossBtn").onclick=confirmTossAndStart;
 $("confirmOpeningPlayers").onclick=()=>{
  const a=$("openingStriker").value.trim(),b=$("openingNonStriker").value.trim(),bow=$("openingBowler").value.trim();
  if(!a||!b||!bow){alert("Please enter striker, non-striker, and opening bowler names.");return}
- state.current.batters[0].name=a;state.current.batters[1].name=b;state.current.bowler=bow;
+ state.current.batters[0].name=a;state.current.batters[1].name=b;state.current.bowler=bow;pendingBowlerSelection=false;
  state.current.bowlers[bow]={name:bow,legal:0,runs:0,wickets:0,wides:0,noBalls:0};
  document.body.classList.add("match-live");$("openingPlayersBackdrop").classList.add("hidden");
  record(`${state.toss}. ${state.teams[state.current.batting]} will bat first.`);render();
@@ -841,7 +841,20 @@ $("cancelTossBtn").onclick=()=>$("tossBackdrop").classList.add("hidden");
 $("tossBackdrop").addEventListener("click",e=>{if(e.target.id==="tossBackdrop")e.target.classList.add("hidden")});
 
 $("saveSetup").onclick=updateSetup;
-document.querySelectorAll("[data-run]").forEach(b=>b.onclick=()=>addBatRuns(Number(b.dataset.run)));
+// JCL scoring reliability: delegated handler keeps run buttons responsive even after UI updates.
+const runButtonContainer=document.querySelector(".runs");
+if(runButtonContainer){
+ runButtonContainer.addEventListener("click",event=>{
+  const button=event.target.closest("[data-run]");
+  if(!button || !runButtonContainer.contains(button))return;
+  event.preventDefault();
+  if(button.disabled)return;
+  const value=Number(button.dataset.run);
+  if(!Number.isInteger(value)||value<0||value>6)return;
+  try{addBatRuns(value);}
+  catch(error){console.error("JCL scoring button error",error);record("Scoring error: "+(error?.message||"Please refresh and try again."));}
+ });
+}
 $("wicketBtn").onclick=()=>{if(state.status==="innings-complete"||state.status==="completed"||cur().legalBalls>=state.maxOvers*6){if(state.inningsNo===1){finishCurrentInnings();openSecondInningsSetup()}else finishCurrentInnings();return}if(widePending){record("Complete the wide sequence by tapping 0–6, or tap WIDE again to cancel.");return}openWicketDialog()};
 $("wideBtn").onclick=()=>{widePending=!widePending;record(widePending?"Wide selected. Now tap 0 if no runs were completed, or tap 1–6 for completed runs.":"Wide selection cancelled.");$("wideBtn").textContent=widePending?"WIDE ✓":"WIDE";$("wideHelp").style.borderColor=widePending?"#b8860b":"#354d69";render()};
 $("moreBtn").onclick=()=>$("moreMenu").classList.toggle("hidden");

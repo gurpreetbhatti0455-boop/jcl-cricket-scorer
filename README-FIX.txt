@@ -1,18 +1,23 @@
-Cricket Scorer by JCL — target display patch
+Cricket Scorer by JCL — dismissal fielder and partnership update
+
+Files in this ZIP:
+- index.html
+- overlay.html
 
 Changes:
-- Phone scoring screen now shows target, runs needed, balls remaining, and required run rate.
-- Manually set target is stored in the match state and restored when the saved match is resumed.
-- Firebase payload uses the saved manual target so the overlay can receive it.
-- Overlay shows runs/balls remaining whenever a target exists, including a manually set target during the first innings and the automatic chase target in the second innings.
+1. Caught, Run out and Stumped require a fielder name in the wicket dialog.
+2. Dismissal type and fielder name are stored separately in the fall-of-wickets record.
+3. PDF scorecard shows dismissal type and fielder, plus partnership batter names, runs and balls.
+4. Firebase public match scorecards now include fall-of-wickets and partnership details.
+5. The final PRISM overlay scorecards show partnerships (batters, runs, balls) and fall of wickets (dismissed batter, dismissal type, fielder and over).
+6. Partnership entries capture the two batters at the time of the wicket and the partnership balls.
 
 Deploy:
-1. Back up current GitHub files.
-2. Replace only index.html and overlay.html in the existing jcl-cricket-scorer repository.
+1. Back up the current GitHub files.
+2. Replace BOTH index.html and overlay.html in the existing repository.
 3. Commit and wait for GitHub Pages to deploy.
-4. Refresh the scoring app and refresh/re-add the overlay URL in PRISM if needed.
-5. Test a manual target, a normal second innings, extras/wides/no-balls, and match resume.
+4. Refresh the scorer and refresh/re-add the overlay URL in PRISM.
 
-Important:
-- The screenshot shows a Chrome Custom Tab toolbar with the website URL, not an in-page loading spinner. HTML changes cannot remove that toolbar. To hide it in the installed Play Store TWA, Digital Asset Links must verify the installed package using the Play App Signing SHA-256 certificate fingerprint from Play Console > Test and release/App integrity (the local APK signing fingerprint alone may not match the Play-installed build). Test by launching the installed app icon, not by opening the tester URL in Chrome.
-- The code patch has been syntax checked, but full live Firebase/PRISM testing is still required before a match.
+Validation:
+- JavaScript syntax check only. Full live Firebase, PDF print and PRISM match testing is still required.
+- Old saved matches may not contain fielder or partnership-ball data; the new fields are recorded for matches scored with this update.

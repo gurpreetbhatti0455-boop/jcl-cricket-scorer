@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<!-- JCL overlay build: batting/bowling labels + match result scorecards | 2026-10-12-r2 -->
+<!-- JCL overlay build: 75% bottom scoreboard + target cycle + two-column result | 2026-11-13-r3 -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -60,6 +60,16 @@
 .match-finish.show{display:block}.finish-title{font-size:clamp(18px,3vw,32px);font-weight:1000;color:#ffd166;letter-spacing:1px}.finish-result{font-size:clamp(24px,4.2vw,46px);font-family:Oswald,Inter,Arial,sans-serif;font-weight:1000;line-height:1.12;color:#ffd166;text-shadow:0 2px 0 #754b00,0 0 18px #ffd16655;margin:10px 0 18px;text-transform:uppercase}.finish-innings{margin:12px 0;padding:10px;border:1px solid #ffffff30;border-radius:8px;text-align:left;background:#ffffff08}.finish-innings h3{font-size:clamp(13px,1.5vw,18px);margin:0 0 8px;color:#ffd166}.finish-table{width:100%;border-collapse:collapse;font-size:clamp(9px,1vw,12px)}.finish-table th,.finish-table td{padding:5px 4px;border-bottom:1px solid #ffffff25;text-align:left}.finish-table th{color:#ffd166}.finish-score{font-size:clamp(22px,3vw,34px);font-weight:1000;margin-bottom:8px}.finish-caption{font-size:11px;color:#c8d7e6;margin-top:8px}
 @media(max-width:600px){.match-finish{inset:4% 2%;max-height:86vh;padding:9px}.finish-innings{padding:7px;margin:7px 0}.finish-table th,.finish-table td{padding:3px 2px}}
 
+/* JCL broadcast update: 75% width, anchored to the bottom edge; compact four-panel layout. */
+.lower{left:12.5%;right:12.5%;bottom:0;width:75%;min-height:clamp(92px,19vh,150px);max-height:30vh;grid-template-columns:minmax(0,1.05fr) minmax(0,1.35fr) minmax(0,.78fr) minmax(0,.95fr);grid-template-rows:minmax(0,1fr) auto;clip-path:none;border-radius:10px 10px 0 0}
+.batters,.center,.chase-panel,.bowling{padding:7px 8px;min-width:0}
+.batters{gap:3px}.player{grid-template-columns:minmax(0,1fr) auto;row-gap:1px;column-gap:4px}.player-name{font-size:clamp(9px,1.05vw,15px)}.player-stat{font-size:clamp(10px,1.1vw,15px)}.player-sub{grid-column:1/-1;text-align:center;margin:0;font-size:clamp(7px,.78vw,10px);letter-spacing:0;color:#f1d58a}
+.chase-panel{display:flex;flex-direction:column;justify-content:center;gap:7px;background:linear-gradient(135deg,#1a3046,#102237);border-left:1px solid var(--line);border-right:1px solid var(--line);text-align:center}.target-cycle{font-family:'Oswald',Inter,sans-serif;font-size:clamp(13px,1.5vw,21px);font-weight:900;color:var(--gold);line-height:1.05}.chase-copy{font-size:clamp(8px,.9vw,12px);font-weight:900;line-height:1.25;color:#fff;overflow-wrap:anywhere}.live-result-strip{grid-column:1/-1;background:linear-gradient(90deg,#173f2c,#24633d);border-top:1px solid #ffffff35;color:#fff;text-align:center;padding:4px 8px;font-size:clamp(9px,1vw,13px);font-weight:1000;letter-spacing:.4px}
+.match-finish{inset:8% 12.5% 21%;max-height:71vh;text-align:center}.finish-scorecards-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}.finish-innings{min-width:0;margin:6px 0;padding:7px}.finish-table{font-size:clamp(7px,.75vw,10px);table-layout:auto}.finish-table th,.finish-table td{padding:3px 2px;overflow-wrap:anywhere}.finish-innings h3{font-size:clamp(10px,1.1vw,15px)}.finish-score{font-size:clamp(18px,2vw,28px)}.finish-fow{font-size:clamp(7px,.7vw,9px);line-height:1.35;color:#dbe7f5}.finish-fow div{padding:2px 0;border-bottom:1px solid #ffffff18}
+@media(max-width:700px){.lower{left:12.5%;right:12.5%;width:75%;bottom:0;grid-template-columns:minmax(0,1fr) minmax(0,1.18fr) minmax(0,.75fr) minmax(0,.9fr);min-height:90px;max-height:31vh}.batters,.center,.chase-panel,.bowling{padding:5px 4px;gap:3px}.player-name{font-size:clamp(7px,2.1vw,11px)}.player-stat{font-size:clamp(8px,2.2vw,12px)}.player-sub{font-size:clamp(6px,1.5vw,8px)}.team{font-size:clamp(7px,1.8vw,10px);padding:3px 4px}.vs{font-size:6px;padding:2px}.score{font-size:clamp(17px,4.2vw,29px)}.overs{font-size:clamp(8px,1.8vw,11px)}.target{font-size:clamp(6px,1.45vw,9px)}.center-bottom{font-size:6px;gap:2px}.bowler-name{font-size:clamp(8px,2vw,12px)}.bowler-figures{font-size:clamp(6px,1.6vw,9px)}.ball{min-width:12px;height:12px;font-size:6px}.ball-row{gap:1px}.target-cycle{font-size:clamp(10px,2.4vw,15px)}.chase-copy{font-size:clamp(6px,1.55vw,9px)}.match-finish{inset:3% 2% 18%;max-height:79vh;padding:7px}.finish-innings{padding:5px;margin:3px 0}.finish-table th,.finish-table td{padding:2px 1px;font-size:7px}}
+@media(max-width:390px){.lower{grid-template-columns:minmax(0,.92fr) minmax(0,1.05fr) minmax(0,.7fr) minmax(0,.8fr)}.section-label{font-size:6px;letter-spacing:.2px}.team-role{display:none}.scoreline{gap:4px}.finish-scorecards-grid{gap:4px}.finish-innings h3{font-size:9px}.finish-table th,.finish-table td{font-size:6px}}
+@media(max-height:420px){.lower{bottom:0;min-height:76px;max-height:32vh}}
+
 </style>
 </head>
 <body>
@@ -70,22 +80,23 @@
 <div class="lower" role="status" aria-live="polite">
  <section class="batters">
   <div class="section-label">Batters</div>
-  <div class="player"><div class="player-name active" id="striker">Batter 1</div><div class="player-stat" id="strikerStats">0 (0)</div><div class="player-sub" id="strikerExtras">4s 0 · 6s 0</div></div>
-  <div class="player"><div class="player-name" id="nonStriker">Batter 2</div><div class="player-stat" id="nonStrikerStats">0 (0)</div><div class="player-sub" id="nonStrikerExtras">4s 0 · 6s 0</div></div>
+  <div class="player"><div class="player-name active" id="striker">Batter 1</div><div class="player-stat" id="strikerStats">0 (0)</div><div class="player-sub" id="strikerExtras">(4s: 0, 6s: 0)</div></div>
+  <div class="player"><div class="player-name" id="nonStriker">Batter 2</div><div class="player-stat" id="nonStrikerStats">0 (0)</div><div class="player-sub" id="nonStrikerExtras">(4s: 0, 6s: 0)</div></div>
  </section>
  <section class="center">
   <div class="teams"><div class="team left" id="leftTeam">TEAM B <span class="team-role">BATTING</span></div><div class="vs">VS</div><div class="team right" id="rightTeam">TEAM A <span class="team-role">BOWLING</span></div></div>
   <div class="scoreline"><div class="score" id="score">0/0</div><div class="overs" id="overs">0.0 OV</div></div>
   <div class="target" id="target">INNINGS 1 · <strong>RR 0.00</strong></div>
-  <div class="target" id="chaseInfo" hidden></div>
   <div class="center-bottom"><span id="tossInfo">TOSS · —</span><span id="inningsInfo">T20 · LIVE</span></div>
  </section>
+ <section class="chase-panel"><div class="section-label">MATCH TARGET</div><div id="targetCycle" class="target-cycle">TARGET —</div><div id="chaseInfo" class="chase-copy">RUNS / BALLS REMAINING</div></section>
  <section class="bowling">
   <div class="ball-head"><div class="section-label">Bowler · This over</div><div class="over-label" id="overLabel">OVER 1</div></div>
   <div class="bowler-name" id="bowler">Bowler</div>
   <div class="bowler-figures" id="bowlerFigures">0-0 · 0.0 OV</div>
   <div class="ball-row" id="ballRow"><span class="ball">—</span></div>
  </section>
+ <div class="live-result-strip" id="liveResultStrip" hidden></div>
 </div>
 <div class="match-finish" id="matchFinish" aria-live="polite"><div class="finish-title">🏆 MATCH RESULT 🏆</div><div class="finish-result" id="finishResult">Match completed</div><div id="finishScorecards"></div><div class="finish-caption">FINAL SCORECARD · CRICKET SCORER BY JCL</div></div>
 <div class="boundary-banner" id="boundaryBanner" aria-hidden="true"><span class="boundary-word" id="boundaryWord">FOUR</span><span class="boundary-sub" id="boundarySub">BOUNDARY!</span></div>
@@ -163,37 +174,44 @@ function render(d){
  const ballsFaced=Number(d.LegalBalls)||0;
  const ballsRemaining=Math.max(0,maxBalls-ballsFaced);
  const runsNeeded=targetNum>0?Math.max(0,targetNum-(Number(d.Runs)||0)):0;
- const target=targetNum>0?`TARGET ${targetNum} · NEED ${runsNeeded}`:`INNINGS ${inningsNo}`;
+ const target=targetNum>0?`TARGET ${targetNum}`:`INNINGS ${inningsNo}`;
  $("target").innerHTML=`${target} · <strong>RR ${Number(d.RunRate||0).toFixed(2)}</strong>`;
  const chaseInfo=$("chaseInfo");
+ const targetCycle=$("targetCycle");
  if(targetNum>0){
-   chaseInfo.hidden=false;
-   chaseInfo.innerHTML=`<strong>${runsNeeded} RUNS</strong> NEEDED FROM <strong>${ballsRemaining} BALLS</strong>${ballsRemaining>0?` · REQUIRED RR ${(runsNeeded/(ballsRemaining/6)).toFixed(2)}`:""}`;
- } else { chaseInfo.hidden=true; chaseInfo.textContent=""; }
+   targetCycle.textContent=`TARGET ${targetNum}`;
+   chaseInfo.textContent=`NEED ${runsNeeded} RUNS IN ${ballsRemaining} BALLS`;
+   if(!window.__jclTargetCycleTimer){window.__jclTargetCycleTimer=setInterval(()=>{const a=$("targetCycle"),b=$("chaseInfo");if(!a||!b)return;const showNeed=a.dataset.mode!=="need";a.dataset.mode=showNeed?"need":"target";a.textContent=showNeed?`NEED ${Math.max(0,Number(window.__jclRunsNeeded)||0)} RUNS`:`TARGET ${Math.max(0,Number(window.__jclTargetValue)||0)}`;b.textContent=showNeed?`${Math.max(0,Number(window.__jclBallsRemaining)||0)} BALLS LEFT`:`REQUIRED RR ${Number(window.__jclRequiredRate||0).toFixed(2)}`;},5000);}
+   window.__jclRunsNeeded=runsNeeded;window.__jclBallsRemaining=ballsRemaining;window.__jclTargetValue=targetNum;window.__jclRequiredRate=ballsRemaining>0?runsNeeded/(ballsRemaining/6):0;
+ } else {targetCycle.textContent="TARGET —";chaseInfo.textContent="TARGET NOT SET";targetCycle.dataset.mode="target";}
  $("tossInfo").textContent=d.Toss?`TOSS · ${String(d.Toss).toUpperCase()}`:"TOSS · NOT RECORDED";
  $("striker").textContent=safe(d.Striker,"Batter 1");$("nonStriker").textContent=safe(d.NonStriker,"Batter 2");
  $("strikerStats").textContent=`${d.StrikerRuns??0} (${d.StrikerBalls??0})`;$("nonStrikerStats").textContent=`${d.NonStrikerRuns??0} (${d.NonStrikerBalls??0})`;
- $("strikerExtras").textContent=`FOURS ${d.StrikerFours??0} · SIXES ${d.StrikerSixes??0}`;$("nonStrikerExtras").textContent=`FOURS ${d.NonStrikerFours??0} · SIXES ${d.NonStrikerSixes??0}`;
+ $("strikerExtras").textContent=`(4s: ${d.StrikerFours??0}, 6s: ${d.StrikerSixes??0})`;$("nonStrikerExtras").textContent=`(4s: ${d.NonStrikerFours??0}, 6s: ${d.NonStrikerSixes??0})`;
  $("bowler").textContent=safe(d.Bowler,"Bowler");const legal=Number(d.BowlerLegal)||0;const bo=`${Math.floor(legal/6)}.${legal%6}`;
  const econ=legal?((Number(d.BowlerRuns)||0)/(legal/6)).toFixed(2):"0.00";$("bowlerFigures").innerHTML=`<span>${d.BowlerWickets??0} W</span> · ${d.BowlerRuns??0} R · ${bo} OV<br>ECON ${econ} · WD ${d.BowlerWides??0} · NB ${d.BowlerNoBalls??0}`;
  $("overLabel").textContent=`OVER ${d.CurrentOverNo||Math.floor((Number(d.LegalBalls)||0)/6)+1}`;
  let balls=Array.isArray(d.CurrentOverBalls)?d.CurrentOverBalls:[];if(!balls.length&&Array.isArray(d.RecentOverBalls))balls=d.RecentOverBalls.slice(-6);const row=$("ballRow");row.innerHTML="";
  if(!balls.length){row.innerHTML='<span class="ball">WAIT</span>';}else{balls.slice(-6).forEach(b=>{const el=document.createElement("span");el.className=`ball ${ballClass(b.label)}`;el.textContent=safe(b.label,"·");el.title=`Over ${b.over||d.CurrentOverNo||""}, ball ${b.ball||""}: ${b.runs||0} run(s)`;row.appendChild(el);});}
  const finish=$("matchFinish");
+ const liveResult=$("liveResultStrip");
+ if(d.Status==="completed"){
+  liveResult.hidden=false;liveResult.textContent=safe(d.ResultText,"MATCH COMPLETED");
+ }else{liveResult.hidden=true;liveResult.textContent="";}
  if(d.Status==="completed"){
   const finishKey=String(d.MatchCode||matchId||"match")+":"+String(d.UpdatedAt||d.CreatedAtMs||"");
   if(completedMatchId!==finishKey){
-   completedMatchId=finishKey;finish.classList.remove("show");clearTimeout(finishDelayTimer);
+   completedMatchId=finishKey;finish.classList.remove("show");clearTimeout(finishDelayTimer);$("finishResult").textContent=safe(d.ResultText,"MATCH COMPLETED");
    finishDelayTimer=setTimeout(()=>{if(previousSnapshot&&previousSnapshot.Status==="completed")finish.classList.add("show")},15000);
   }
   // Scorecard remains hidden for 15 seconds so the live overlay/camera can show celebrations.
   if(completedMatchId===finishKey && finish.classList.contains("show")){}
   const cards=Array.isArray(d.InningsScorecards)?d.InningsScorecards:[];
-  $("finishScorecards").innerHTML=cards.map((inn,i)=>{
+  $("finishScorecards").innerHTML=`<div class="finish-scorecards-grid">${cards.map((inn,i)=>{
    const bat=(inn.batters||[]).map(b=>`<tr><td>${safe(b.name,"Batter")}${b.out?" (out)":"*"}</td><td>${Number(b.runs)||0}</td><td>${Number(b.balls)||0}</td><td>${Number(b.fours)||0}</td><td>${Number(b.sixes)||0}</td></tr>`).join("");
    const bowl=(inn.bowlers||[]).map(b=>`<tr><td>${safe(b.name,"Bowler")}</td><td>${Math.floor((Number(b.legal)||0)/6)}.${(Number(b.legal)||0)%6}</td><td>${Number(b.runs)||0}</td><td>${Number(b.wickets)||0}</td><td>${Number(b.wides)||0}</td><td>${Number(b.noBalls)||0}</td></tr>`).join("");
-   return `<section class="finish-innings"><h3>${i===0?"1ST INNINGS":"2ND INNINGS"} · ${safe(inn.team,"Team").toUpperCase()}</h3><div class="finish-score">${Number(inn.runs)||0}/${Number(inn.wickets)||0} <span style="font-size:.48em">(${Math.floor((Number(inn.legalBalls)||0)/6)}.${(Number(inn.legalBalls)||0)%6} OV)</span></div><b>Batting</b><table class="finish-table"><thead><tr><th>Batter</th><th>R</th><th>B</th><th>4s</th><th>6s</th></tr></thead><tbody>${bat||"<tr><td colspan=5>No batting data</td></tr>"}</tbody></table><b style="display:block;margin-top:8px">Bowling</b><table class="finish-table"><thead><tr><th>Bowler</th><th>O</th><th>R</th><th>W</th><th>Wd</th><th>Nb</th></tr></thead><tbody>${bowl||"<tr><td colspan=6>No bowling data</td></tr>"}</tbody></table></section>`;
-  }).join("")||"<div class=finish-caption>Scorecard details are not available in the public match data yet.</div>";
+   return `<section class="finish-innings"><h3>${i===0?"1ST INNINGS":"2ND INNINGS"} · ${safe(inn.team,"Team").toUpperCase()}</h3><div class="finish-score">${Number(inn.runs)||0}/${Number(inn.wickets)||0} <span style="font-size:.48em">(${Math.floor((Number(inn.legalBalls)||0)/6)}.${(Number(inn.legalBalls)||0)%6} OV)</span></div><b>Batting</b><table class="finish-table"><thead><tr><th>Batter</th><th>R</th><th>B</th><th>4s</th><th>6s</th></tr></thead><tbody>${bat||"<tr><td colspan=5>No batting data</td></tr>"}</tbody></table><b style="display:block;margin-top:8px">Bowling</b><table class="finish-table"><thead><tr><th>Bowler</th><th>O</th><th>R</th><th>W</th><th>Wd</th><th>Nb</th></tr></thead><tbody>${bowl||"<tr><td colspan=6>No bowling data</td></tr>"}</tbody></table><b style="display:block;margin-top:8px">Partnerships</b><table class="finish-table"><thead><tr><th>Batters</th><th>Runs</th><th>Balls</th></tr></thead><tbody>${(inn.partnerships||[]).map(p=>`<tr><td>${safe(p.batters,"Batting pair")}</td><td>${Number(p.runs)||0}</td><td>${Number(p.balls)||0}</td></tr>`).join("")||"<tr><td colspan=3>No partnership data</td></tr>"}</tbody></table><b style="display:block;margin-top:8px">Fall of wickets</b><div class="finish-fow">${(inn.fallOfWickets||[]).map(w=>`<div>${Number(w.wicket)||0}-${Number(w.score)||0} · ${safe(w.batter,"Batter")} (${safe(w.dismissal,"Wicket")}${w.fielder?` · ${safe(w.fielder)}`:""}) · ${safe(w.overs,"")} ov</div>`).join("")||"No wickets"}</div></section>`;
+  }).join("")}</div>`||"<div class=finish-caption>Scorecard details are not available in the public match data yet.</div>";
  }else{clearTimeout(finishDelayTimer);completedMatchId=null;finish.classList.remove("show");}
  const loc=[d.MatchCountry||"India",d.MatchState||"" ,d.MatchCity||""].filter(Boolean).join(" · ").toUpperCase();
  $("venue").textContent=loc;

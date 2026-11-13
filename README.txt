@@ -1,31 +1,20 @@
-JCL CRICKET SCORER — FINAL TOURNAMENT / MULTIPLE MATCH FIX
+Cricket Scorer by JCL — overlay layout refinement
 
-Files in this package:
-- index.html — tournament setup, multiple-match history/results, scoring app, and Firebase publishing.
-- overlay.html — live overlay and completed-match result display.
-- firestore.rules — owner-only private match writes and public read-only overlay rules.
+Replace both files in your existing GitHub repository:
+- index.html (included unchanged from the uploaded source)
+- overlay.html (updated layout)
 
-IMPORTANT FIX
-The Multiple Match results renderer is now defined at top-level and exposed as window.__JCL_multiResultsHtml. Both Multiple Match History and the completed-match panel call the global function, so they do not depend on render()'s local scope. This addresses the “multiResultsHtml is not defined” error.
+Overlay changes:
+- Scoreboard now spans the full screen width, flush to both edges.
+- Vertical height reduced to about 75% of the earlier lower-third height.
+- Batter name, runs (balls), and 4s/6s now appear on one line.
+- Centre batting/score panel widened; target panel narrowed.
+- First innings without a target shows toss winner, overs limit and projected score.
+- Innings indicator explicitly shows INNINGS 1 or INNINGS 2.
+- When target is set, chase target and runs/balls remaining cycle as before.
 
-INSTALL
-1. Back up your current GitHub index.html, overlay.html, and Firebase Firestore rules.
-2. Replace the repository's index.html with this package's index.html (keep the filename index.html).
-3. Replace the repository's overlay.html with this package's overlay.html (keep the filename overlay.html).
-4. Commit the changes and wait for GitHub Pages to deploy.
-5. On your phone, open the scorer in Chrome and reload the page. If the old error remains, open the site in an Incognito tab to bypass cached files.
+Note: projected value is a projected total score based on the current run rate, not a projected run-rate figure.
+The app's Firebase public payload already includes Toss and MaxOvers, used by the overlay.
+After GitHub Pages deploys, refresh/re-add the overlay URL in PRISM.
 
-FIREBASE PERMISSIONS
-If the app still shows “Missing or insufficient permissions”, the rules file must be published separately:
-1. Firebase Console > Firestore Database > Rules.
-2. Back up the existing rules, then paste the contents of firestore.rules and click Publish.
-3. Firebase Console > Authentication > Sign-in method: ensure Google sign-in is enabled.
-
-TEST BEFORE A LIVE MATCH
-- Open Multiple Match mode and open Multiple Match History.
-- Set up a tournament, save team names, and verify it opens toss setup for the first match.
-- Start a dummy match and check that the overlay updates.
-- Complete a dummy match and confirm the result appears.
-
-LIMITATIONS
-Tournament team names are stored locally in this browser. Automatic tournament fixtures/brackets are not implemented. Firebase behavior must be verified against the user's live project after publishing; these files cannot deploy changes to GitHub or Firebase automatically.
+Validation: source updated; run the live match and PRISM checks after deployment.

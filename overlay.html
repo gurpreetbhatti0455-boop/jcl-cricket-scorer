@@ -70,6 +70,40 @@
 @media(max-width:390px){.lower{grid-template-columns:minmax(0,.92fr) minmax(0,1.05fr) minmax(0,.7fr) minmax(0,.8fr)}.section-label{font-size:6px;letter-spacing:.2px}.team-role{display:none}.scoreline{gap:4px}.finish-scorecards-grid{gap:4px}.finish-innings h3{font-size:9px}.finish-table th,.finish-table td{font-size:6px}}
 @media(max-height:420px){.lower{bottom:0;min-height:76px;max-height:32vh}}
 
+
+/* JCL layout refinement: full-width, slim lower-third; wider batting/score centre */
+.lower{left:0!important;right:0!important;width:100%!important;bottom:0!important;min-height:clamp(68px,14.25vh,112px)!important;max-height:22vh!important;grid-template-columns:minmax(0,1.12fr) minmax(0,1.72fr) minmax(0,.68fr) minmax(0,1fr)!important;border-radius:8px 8px 0 0!important}
+.batters,.center,.chase-panel,.bowling{padding:5px 8px!important;gap:3px!important}
+.batters{gap:4px!important}
+.player{grid-template-columns:minmax(0,1fr) auto auto!important;column-gap:7px!important;row-gap:0!important;align-items:center!important}
+.player-name{font-size:clamp(9px,1.1vw,15px)!important}
+.player-stat{font-size:clamp(9px,1.05vw,14px)!important}
+.player-sub{display:none!important}
+.player-extras{font-size:clamp(8px,.9vw,12px);font-weight:900;color:#f1d58a;white-space:nowrap;text-align:right}
+.center{padding-left:12px!important;padding-right:12px!important}
+.chase-panel{padding-left:4px!important;padding-right:4px!important}
+.target-cycle{font-size:clamp(10px,1.25vw,17px)!important}
+.chase-copy{font-size:clamp(7px,.8vw,11px)!important}
+@media(max-width:700px){
+ .lower{left:0!important;right:0!important;width:100%!important;min-height:clamp(65px,14.25vh,100px)!important;max-height:23vh!important;grid-template-columns:minmax(0,1.08fr) minmax(0,1.55fr) minmax(0,.68fr) minmax(0,.92fr)!important}
+ .batters,.center,.chase-panel,.bowling{padding:4px 5px!important;gap:2px!important}
+ .player{column-gap:3px!important}
+ .player-name{font-size:clamp(7px,1.8vw,11px)!important}
+ .player-stat{font-size:clamp(7px,1.75vw,11px)!important}
+ .player-extras{font-size:clamp(6px,1.45vw,9px)!important}
+ .score{font-size:clamp(17px,4.2vw,29px)!important}
+ .target-cycle{font-size:clamp(8px,2vw,13px)!important}
+ .chase-copy{font-size:clamp(5.5px,1.35vw,8px)!important}
+ .bowler-name{font-size:clamp(7px,1.8vw,11px)!important}
+ .bowler-figures{font-size:clamp(6px,1.45vw,8px)!important}
+ .center-bottom{font-size:5.5px!important}
+}
+@media(max-width:390px){
+ .lower{grid-template-columns:minmax(0,1fr) minmax(0,1.42fr) minmax(0,.62fr) minmax(0,.85fr)!important}
+ .batters,.center,.chase-panel,.bowling{padding-left:3px!important;padding-right:3px!important}
+ .player-extras{font-size:5.5px!important}
+}
+
 </style>
 </head>
 <body>
@@ -80,8 +114,8 @@
 <div class="lower" role="status" aria-live="polite">
  <section class="batters">
   <div class="section-label">Batters</div>
-  <div class="player"><div class="player-name active" id="striker">Batter 1</div><div class="player-stat" id="strikerStats">0 (0)</div><div class="player-sub" id="strikerExtras">(4s: 0, 6s: 0)</div></div>
-  <div class="player"><div class="player-name" id="nonStriker">Batter 2</div><div class="player-stat" id="nonStrikerStats">0 (0)</div><div class="player-sub" id="nonStrikerExtras">(4s: 0, 6s: 0)</div></div>
+  <div class="player"><div class="player-name active" id="striker">Batter 1</div><div class="player-stat" id="strikerStats">0 (0)</div><div class="player-extras" id="strikerExtras">4s: 0 · 6s: 0</div></div>
+  <div class="player"><div class="player-name" id="nonStriker">Batter 2</div><div class="player-stat" id="nonStrikerStats">0 (0)</div><div class="player-extras" id="nonStrikerExtras">4s: 0 · 6s: 0</div></div>
  </section>
  <section class="center">
   <div class="teams"><div class="team left" id="leftTeam">TEAM B <span class="team-role">BATTING</span></div><div class="vs">VS</div><div class="team right" id="rightTeam">TEAM A <span class="team-role">BOWLING</span></div></div>
@@ -183,11 +217,19 @@ function render(d){
    chaseInfo.textContent=`NEED ${runsNeeded} RUNS IN ${ballsRemaining} BALLS`;
    if(!window.__jclTargetCycleTimer){window.__jclTargetCycleTimer=setInterval(()=>{const a=$("targetCycle"),b=$("chaseInfo");if(!a||!b)return;const showNeed=a.dataset.mode!=="need";a.dataset.mode=showNeed?"need":"target";a.textContent=showNeed?`NEED ${Math.max(0,Number(window.__jclRunsNeeded)||0)} RUNS`:`TARGET ${Math.max(0,Number(window.__jclTargetValue)||0)}`;b.textContent=showNeed?`${Math.max(0,Number(window.__jclBallsRemaining)||0)} BALLS LEFT`:`REQUIRED RR ${Number(window.__jclRequiredRate||0).toFixed(2)}`;},5000);}
    window.__jclRunsNeeded=runsNeeded;window.__jclBallsRemaining=ballsRemaining;window.__jclTargetValue=targetNum;window.__jclRequiredRate=ballsRemaining>0?runsNeeded/(ballsRemaining/6):0;
- } else {targetCycle.textContent="TARGET —";chaseInfo.textContent="TARGET NOT SET";targetCycle.dataset.mode="target";}
+ } else {
+   const tossText=String(d.Toss||"");
+   const tossWinner=(tossText.match(/^(.*?) won the toss/i)||[])[1]||"TOSS NOT RECORDED";
+   const oversLimit=Number(d.MaxOvers)||20;
+   const projected=ballsFaced>0?Math.round((Number(d.Runs)||0)/(ballsFaced/6)*oversLimit):0;
+   targetCycle.textContent=`TOSS · ${tossWinner.toUpperCase()}`;
+   chaseInfo.textContent=`${oversLimit} OVERS · PROJECTED ${projected}`;
+   targetCycle.dataset.mode="toss";
+ }
  $("tossInfo").textContent=d.Toss?`TOSS · ${String(d.Toss).toUpperCase()}`:"TOSS · NOT RECORDED";
  $("striker").textContent=safe(d.Striker,"Batter 1");$("nonStriker").textContent=safe(d.NonStriker,"Batter 2");
  $("strikerStats").textContent=`${d.StrikerRuns??0} (${d.StrikerBalls??0})`;$("nonStrikerStats").textContent=`${d.NonStrikerRuns??0} (${d.NonStrikerBalls??0})`;
- $("strikerExtras").textContent=`(4s: ${d.StrikerFours??0}, 6s: ${d.StrikerSixes??0})`;$("nonStrikerExtras").textContent=`(4s: ${d.NonStrikerFours??0}, 6s: ${d.NonStrikerSixes??0})`;
+ $("strikerExtras").textContent=`4s: ${d.StrikerFours??0} · 6s: ${d.StrikerSixes??0}`;$("nonStrikerExtras").textContent=`4s: ${d.NonStrikerFours??0} · 6s: ${d.NonStrikerSixes??0}`;
  $("bowler").textContent=safe(d.Bowler,"Bowler");const legal=Number(d.BowlerLegal)||0;const bo=`${Math.floor(legal/6)}.${legal%6}`;
  const econ=legal?((Number(d.BowlerRuns)||0)/(legal/6)).toFixed(2):"0.00";$("bowlerFigures").innerHTML=`<span>${d.BowlerWickets??0} W</span> · ${d.BowlerRuns??0} R · ${bo} OV<br>ECON ${econ} · WD ${d.BowlerWides??0} · NB ${d.BowlerNoBalls??0}`;
  $("overLabel").textContent=`OVER ${d.CurrentOverNo||Math.floor((Number(d.LegalBalls)||0)/6)+1}`;
@@ -215,7 +257,7 @@ function render(d){
  }else{clearTimeout(finishDelayTimer);completedMatchId=null;finish.classList.remove("show");}
  const loc=[d.MatchCountry||"India",d.MatchState||"" ,d.MatchCity||""].filter(Boolean).join(" · ").toUpperCase();
  $("venue").textContent=loc;
- $("inningsInfo").textContent=`${safe(d.Title,"LIVE MATCH").toUpperCase()} · ${d.MaxOvers||20} OVERS · ${d.Status==="completed"?"COMPLETED":"LIVE"}`;
+ $("inningsInfo").textContent=`INNINGS ${Number(d.InningsNo)||1} · ${d.MaxOvers||20} OVERS · ${d.Status==="completed"?"COMPLETED":"LIVE"}`;
  updateClock();
  $("state").textContent=d.Status==="completed"||d.Status==="innings-complete"?"MATCH / INNINGS COMPLETED":"LIVE SCORE CONNECTED";
 }

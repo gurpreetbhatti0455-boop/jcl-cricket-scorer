@@ -333,7 +333,7 @@ body.home-mode>header,body.home-mode>main,body.home-mode>footer{display:none!imp
    <p class="muted">Example: if the batters completed 1 run and the batter was run out while trying for the second, select 1.</p>
   </div>
   <div id="fielderFields"><label for="fielderName">Fielder name (for catch / run out / stumping)</label><input id="fielderName" placeholder="Enter fielder name (optional)"></div>
-  <label for="nextBatterName">Next batter name</label><input id="nextBatterName" placeholder="Type next batter's name">
+  <label for="nextBatterName">Next batter name <span style="color:#d33;font-weight:800">(Required)</span></label><input id="nextBatterName" value="Batter 3" placeholder="Enter next batter name" autocomplete="off" autocapitalize="words">
   <button id="confirmWicketBtn" class="btn red run-popup-cancel">Confirm wicket</button>
   <button id="cancelWicketBtn" class="btn run-popup-cancel">Cancel</button>
  </div>
@@ -528,6 +528,16 @@ function buildPrintableScorecard(){
  }).join("");
  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>JCL Scorecard</title><style>
 *{box-sizing:border-box}body{font-family:Arial,sans-serif;color:#263746;padding:14px;max-width:1500px;margin:auto;font-size:15px}header{background:#193b57;color:#fff;border-radius:10px;padding:16px;margin-bottom:12px}h1{font-size:25px;margin:0 0 5px}header p{margin:4px 0;color:#e5eef5}.result{font-size:20px;font-weight:800;color:#173d5b;background:#eaf2f8;border-left:5px solid #456b8a;padding:12px;border-radius:7px;margin:12px 0}.team-results{display:flex;gap:10px;margin-bottom:12px}.team-results div{flex:1;background:#f1f6fa;padding:10px;border-radius:7px;font-weight:700;font-size:15px}.innings-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}.innings-card{min-width:0;border:1px solid #d7e0e8;border-radius:9px;padding:10px;margin:0;break-inside:avoid}h2{background:#315d7d;color:white;padding:10px 11px;border-radius:6px;font-size:17px;margin:0 0 7px}h2 span{float:right;font-weight:700}.innings-score{font-size:22px;font-weight:800;margin:7px 2px;color:#243e54}.innings-score small{font-size:13px;font-weight:500;color:#687987}.score-columns{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}h3{color:#315d7d;font-size:15px;margin:10px 0 6px}table{width:100%;border-collapse:collapse;margin:0 0 8px;font-size:14px}th,td{border-bottom:1px solid #d8e1e8;padding:7px 5px;text-align:left;white-space:nowrap}th{background:#edf3f7;color:#385a74;font-weight:800}td.name{font-weight:700;white-space:normal}tr:nth-child(even) td{background:#fafcfd}.extras{background:#f3f6f8;padding:9px;border-radius:6px;font-size:13px;margin:6px 0}.detail-columns{display:grid;grid-template-columns:1fr 1fr;gap:10px}.detail-row{background:#edf3f7;border-left:3px solid #456b8a;padding:7px 8px;margin:4px 0;border-radius:4px;font-size:13px;line-height:1.35}.foot{font-size:11px;color:#7a8791;text-align:center;margin-top:14px}@media(max-width:760px){body{padding:9px;font-size:14px}.innings-grid{grid-template-columns:1fr}.score-columns{grid-template-columns:1fr 1fr;gap:6px}table{font-size:12px}th,td{padding:6px 3px}.detail-columns{grid-template-columns:1fr 1fr}.innings-card{padding:8px}h2{font-size:15px}h2 span{font-size:13px}}@media(max-width:420px){.score-columns,.detail-columns{grid-template-columns:1fr}.team-results{font-size:13px}}@media print{body{padding:7mm;max-width:none}header,h2{print-color-adjust:exact;-webkit-print-color-adjust:exact}.innings-grid{grid-template-columns:1fr 1fr}.innings-card{break-inside:avoid}}
+
+/* WICKET DIALOG READABILITY */
+#wicketBackdrop .run-popup{width:min(480px,96vw);padding:24px}
+#wicketBackdrop .run-popup h2{font-size:24px}
+#wicketBackdrop .run-popup p{font-size:15px;line-height:1.4}
+#wicketBackdrop .run-popup label{display:block;font-size:16px;font-weight:700;margin:12px 0 5px}
+#wicketBackdrop .run-popup input,#wicketBackdrop .run-popup select{width:100%;min-height:50px;padding:11px 13px;font-size:18px;border:1px solid #aeb8c2;border-radius:10px}
+#wicketBackdrop #nextBatterName{font-weight:800;background:#f2f8ff;border:2px solid #2677bd}
+#wicketBackdrop #confirmWicketBtn{min-height:52px;font-size:18px;font-weight:800}
+@media(max-width:520px){#wicketBackdrop{padding:10px}#wicketBackdrop .run-popup{padding:18px;width:100%}#wicketBackdrop .run-popup h2{font-size:22px}#wicketBackdrop .run-popup input,#wicketBackdrop .run-popup select{font-size:17px;min-height:48px}}
 </style></head><body><header><h1>${escHtml(state.matchName||"JCL T20 Match")}</h1><p>Cricket Scorer by JCL</p><p>${escHtml(state.teams[0])} vs ${escHtml(state.teams[1])} · ${state.maxOvers} overs</p><p>Toss: ${escHtml(state.toss||"Not recorded")}</p></header><div class="result">${escHtml(result)}</div><div class="team-results"><div>${escHtml(state.teams[0])}<br>${escHtml(teamScore(state.teams[0]))}</div><div>${escHtml(state.teams[1])}<br>${escHtml(teamScore(state.teams[1]))}</div></div><div class="innings-grid">${sections}</div><p class="foot">Generated by Cricket Scorer by JCL</p><script>window.onload=()=>setTimeout(()=>window.print(),350)<${"/"}script></body></html>`;
 }
 function downloadScorecardPDF(){
@@ -915,18 +925,26 @@ document.addEventListener("keydown", e => {
 function openWicketDialog(){
  const c=cur(),sel=$("outBatterSelect");
  sel.innerHTML=c.batters.map((b,i)=>!b.out?`<option value="${i}" ${i===c.striker?"selected":""}>${esc(b.name)}${i===c.striker?" (striker)":" (non-striker)"}</option>`:"").join("");
- $("nextBatterName").value=$("newBatter").value.trim();
+ $("nextBatterName").value=$("newBatter").value.trim() || `Batter ${c.batters.length+1}`;
  $("fielderName").value="";
  $("runOutCompletedRuns").value="0";
  $("runOutRunsField").classList.toggle("hidden",$("dismissalType").value!=="Run out");
  $("wicketBackdrop").classList.remove("hidden");
 }
 function closeWicketDialog(){$("wicketBackdrop").classList.add("hidden")}
+$("nextBatterName").addEventListener("focus",()=>{$("nextBatterName").select()});
 function confirmWicket(){
  const c=cur(),outIndex=Number($("outBatterSelect").value),type=$("dismissalType").value;
  const outBatter=c.batters[outIndex];
  if(!outBatter||outBatter.out){alert("Please select a batter who is not out.");return}
  const fielder=$("fielderName").value.trim(),nextName=$("nextBatterName").value.trim();
+ const maxWickets=Math.max(1,(Number(state.playerCount)||11)-1);
+ const needsNextBatter=(c.wickets+1)<maxWickets;
+ const isSuggestion=/^Batter\s+\d+$/i.test(nextName);
+ if(needsNextBatter&&(!nextName||isSuggestion)){
+  alert("Please enter the next batter's actual name. 'Batter 3' is only a suggested name.");
+  $("nextBatterName").focus();$("nextBatterName").select();return;
+ }
  const completedRuns=type==="Run out"?Math.max(0,Math.min(6,Number($("runOutCompletedRuns").value)||0)):0;
  if(["Caught","Run out","Stumped"].includes(type)&&!fielder){alert("Please enter the fielder's name.");$("fielderName").focus();return;}
  const strikerAtDelivery=c.batters[c.striker];

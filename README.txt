@@ -1,28 +1,25 @@
-Cricket Scorer by JCL — Target Auto-End & Final Scorecard Update
+Cricket Scorer by JCL — Target Auto-End, Final Scorecard & Wicket Dialog Readability Update
 Build date: 13 November 2026
 
 FILES
-- index.html: Updated scoring app and final scorecard.
-- overlay.html: Current PRISM overlay from the previous approved build (unchanged in this update).
+- index.html: scorer application and PDF scorecard.
+- overlay.html: PRISM overlay and final match result scorecard.
 
-CHANGES IN THIS UPDATE
-1. During the second innings, the match ends immediately when the configured target is reached. A manually entered target is now used consistently for the chase, match result, and live target display. If no manual target is set, the target remains first-innings score + 1.
-2. When the match ends, the complete scorecard is displayed automatically on the scorer screen. The PDF/print button remains available.
-3. Both innings are presented as compact scorecard panels. Within each innings, Batting and Bowling tables sit side by side on larger screens; phone layouts stack cleanly for readability.
-4. Partnerships and Fall of Wickets are shown below the tables.
-5. The current unfinished partnership is included even if no wicket fell. Not-out batter names have an asterisk (*), including a no-wicket second innings partnership.
-6. Batter, bowler, dismissed-batter and fielder names are normalized to Title Case (e.g. RAHUL -> Rahul).
-7. Table text, headings, rows and spacing are enlarged for readability.
-8. Multiple-Match completion no longer interrupts the automatic scorecard with a Man of the Match prompt.
+CHANGES
+1. Kept the previous target auto-end and final scorecard functionality.
+2. Increased the final overlay scorecard font sizes for innings headings, scores, batting, bowling, partnerships, fall of wickets and result text. The innings panels can scroll if a long scorecard needs more room; phone layout stacks the innings panels vertically.
+3. Overlay batter and bowler names use Title Case. Not-out batters retain the * marker.
+4. Wicket dialog now pre-fills the next batter field with a suggested name such as “Batter 3”. Focusing the field selects the suggestion so the scorer can type the actual name immediately.
+5. Confirm Wicket is blocked when the next batter is required but the field is blank or still contains the generic “Batter N” suggestion. A clear alert explains that the actual batter name is required. On the final wicket, no replacement name is required.
+6. Enlarged wicket dialog labels, inputs and confirmation button for easier use.
 
 DEPLOYMENT
-1. Back up the current GitHub repository files first.
-2. Replace index.html in the existing repository with the index.html from this ZIP.
-3. overlay.html is included as the matching current overlay file; it has not been changed by this update. Keep the repository's current overlay.html, or replace it with the included copy if needed.
-4. Commit the change and wait for GitHub Pages to deploy.
-5. Refresh Cricket Scorer. Refresh/re-add the PRISM overlay only if you replaced overlay.html.
+1. Back up both current repository files.
+2. Replace index.html and overlay.html with the files in this ZIP.
+3. Commit and wait for GitHub Pages to deploy.
+4. Refresh the scorer page. Refresh/re-add the PRISM overlay URL to load the updated overlay.
 
 VALIDATION
-- JavaScript syntax checked for the app scripts.
-- Scorecard fixture checked for title-cased names, not-out stars, current partnerships, batting/bowling tables and fall of wickets.
-- Full live Firebase, real device scoring, PDF print dialog, and PRISM streaming still need an on-device test before an official match.
+- JavaScript syntax checks are included in the build validation.
+- Wicket dialog validation and final scorecard layout were reviewed in source.
+- Live Firebase, actual phone/browser interaction, print/PDF and PRISM broadcast still require a real-device test before an official match.

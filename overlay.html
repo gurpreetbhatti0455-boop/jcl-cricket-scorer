@@ -204,6 +204,34 @@
  .finish-result{font-size:clamp(14px,3vw,22px)!important}
  .finish-title{font-size:10px!important}
 }
+
+/* READABILITY UPDATE: enlarge every scorecard field to match the main run total. */
+.match-finish{overflow:auto!important}
+#finishScorecards{overflow:visible!important;min-height:0}
+.finish-innings{overflow-y:auto!important;overflow-x:hidden!important;scrollbar-width:thin}
+.finish-innings h3{font-size:clamp(13px,1.15vw,17px)!important;line-height:1.15!important;margin:0 0 5px!important}
+.finish-score{font-size:clamp(25px,2.3vw,34px)!important;line-height:1.05!important;margin:2px 0 6px!important}
+.finish-innings b{font-size:clamp(12px,1.05vw,16px)!important;line-height:1.15!important;margin-top:7px!important}
+.finish-table{font-size:clamp(11px,1vw,15px)!important;line-height:1.2!important}
+.finish-table th,.finish-table td{padding:4px 5px!important;line-height:1.2!important;white-space:normal!important}
+.finish-fow{font-size:clamp(10px,.95vw,14px)!important;line-height:1.3!important;overflow:visible!important}
+.finish-fow div{padding:3px 0!important;line-height:1.3!important;white-space:normal!important}
+.finish-title{font-size:clamp(18px,1.8vw,25px)!important}
+.finish-result{font-size:clamp(28px,3vw,40px)!important;line-height:1.08!important;margin:5px 0 8px!important}
+.finish-caption{font-size:clamp(9px,.8vw,12px)!important}
+@media(max-width:700px){
+ .match-finish{inset:1% 1%!important;height:98vh!important;max-height:98vh!important;padding:6px!important;overflow:auto!important}
+ .finish-scorecards-grid{grid-template-columns:1fr!important;gap:6px!important;height:auto!important}
+ .finish-innings{height:auto!important;max-height:none!important;padding:7px!important;overflow:visible!important}
+ .finish-innings h3{font-size:14px!important}
+ .finish-score{font-size:26px!important}
+ .finish-innings b{font-size:13px!important}
+ .finish-table{font-size:12px!important}
+ .finish-table th,.finish-table td{padding:4px 3px!important}
+ .finish-fow{font-size:11px!important}
+ .finish-title{font-size:18px!important}
+ .finish-result{font-size:25px!important}
+}
 </style>
 </head>
 <body>
@@ -242,6 +270,7 @@ import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasej
 const firebaseConfig={apiKey:"AIzaSyDta_AAwNpU-9OAWtVgYGhB-GmGaZZFLsI",authDomain:"jcl-cricket-scorer.firebaseapp.com",projectId:"jcl-cricket-scorer",storageBucket:"jcl-cricket-scorer.firebasestorage.app",messagingSenderId:"112116011790",appId:"1:112116011790:web:d6d2a4ca7416dce53efd5f",measurementId:"G-DFJ3V8ZCV8"};
 const $=id=>document.getElementById(id);const matchId=new URLSearchParams(location.search).get("match");
 const safe=(v,fallback="—")=>v===undefined||v===null||v===""?fallback:String(v);
+const playerName=(v,fallback="—")=>safe(v,fallback).toLowerCase().replace(/\b[a-z]/g,m=>m.toUpperCase());
 function ballClass(label){const s=String(label||"").toUpperCase();if(s==="W"||s.includes("WICKET"))return"wicket";if(s==="4"||s==="6"||s.startsWith("4")||s.startsWith("6"))return"boundary";if(/WD|NB|B|LB|PEN/.test(s))return"extra";return""}
 let previousSnapshot=null;let boundaryTimer=null;let overCardTimer=null;let finishDelayTimer=null;let completedMatchId=null;
 function showBoundaryBanner(kind, milestoneRuns=0, batterName=""){
@@ -380,9 +409,9 @@ function render(d){
   if(completedMatchId===finishKey && finish.classList.contains("show")){}
   const cards=Array.isArray(d.InningsScorecards)?d.InningsScorecards:[];
   $("finishScorecards").innerHTML=`<div class="finish-scorecards-grid">${cards.map((inn,i)=>{
-   const bat=(inn.batters||[]).map(b=>`<tr><td>${safe(b.name,"Batter")}${b.out?" (out)":"*"}</td><td>${Number(b.runs)||0}</td><td>${Number(b.balls)||0}</td><td>${Number(b.fours)||0}</td><td>${Number(b.sixes)||0}</td></tr>`).join("");
-   const bowl=(inn.bowlers||[]).map(b=>`<tr><td>${safe(b.name,"Bowler")}</td><td>${Math.floor((Number(b.legal)||0)/6)}.${(Number(b.legal)||0)%6}</td><td>${Number(b.runs)||0}</td><td>${Number(b.wickets)||0}</td><td>${Number(b.wides)||0}</td><td>${Number(b.noBalls)||0}</td></tr>`).join("");
-   return `<section class="finish-innings"><h3>${i===0?"1ST INNINGS":"2ND INNINGS"} · ${safe(inn.team,"Team").toUpperCase()}</h3><div class="finish-score">${Number(inn.runs)||0}/${Number(inn.wickets)||0} <span style="font-size:.48em">(${Math.floor((Number(inn.legalBalls)||0)/6)}.${(Number(inn.legalBalls)||0)%6} OV)</span></div><b>Batting</b><table class="finish-table"><thead><tr><th>Batter</th><th>R</th><th>B</th><th>4s</th><th>6s</th></tr></thead><tbody>${bat||"<tr><td colspan=5>No batting data</td></tr>"}</tbody></table><b style="display:block;margin-top:8px">Bowling</b><table class="finish-table"><thead><tr><th>Bowler</th><th>O</th><th>R</th><th>W</th><th>Wd</th><th>Nb</th></tr></thead><tbody>${bowl||"<tr><td colspan=6>No bowling data</td></tr>"}</tbody></table><b style="display:block;margin-top:8px">Partnerships</b><table class="finish-table"><thead><tr><th>Batters</th><th>Runs</th><th>Balls</th></tr></thead><tbody>${(inn.partnerships||[]).map(p=>`<tr><td>${safe(p.batters,"Batting pair")}</td><td>${Number(p.runs)||0}</td><td>${Number(p.balls)||0}</td></tr>`).join("")||"<tr><td colspan=3>No partnership data</td></tr>"}</tbody></table><b style="display:block;margin-top:8px">Fall of wickets</b><div class="finish-fow">${(inn.fallOfWickets||[]).map(w=>`<div>${Number(w.wicket)||0}-${Number(w.score)||0} · ${safe(w.batter,"Batter")} (${safe(w.dismissal,"Wicket")}${w.fielder?` · ${safe(w.fielder)}`:""}) · ${safe(w.overs,"")} ov</div>`).join("")||"No wickets"}</div></section>`;
+   const bat=(inn.batters||[]).map(b=>`<tr><td>${playerName(b.name,"Batter")}${b.out?" (out)":"*"}</td><td>${Number(b.runs)||0}</td><td>${Number(b.balls)||0}</td><td>${Number(b.fours)||0}</td><td>${Number(b.sixes)||0}</td></tr>`).join("");
+   const bowl=(inn.bowlers||[]).map(b=>`<tr><td>${playerName(b.name,"Bowler")}</td><td>${Math.floor((Number(b.legal)||0)/6)}.${(Number(b.legal)||0)%6}</td><td>${Number(b.runs)||0}</td><td>${Number(b.wickets)||0}</td><td>${Number(b.wides)||0}</td><td>${Number(b.noBalls)||0}</td></tr>`).join("");
+   return `<section class="finish-innings"><h3>${i===0?"1ST INNINGS":"2ND INNINGS"} · ${safe(inn.team,"Team").toUpperCase()}</h3><div class="finish-score">${Number(inn.runs)||0}/${Number(inn.wickets)||0} <span style="font-size:.48em">(${Math.floor((Number(inn.legalBalls)||0)/6)}.${(Number(inn.legalBalls)||0)%6} OV)</span></div><b>Batting</b><table class="finish-table"><thead><tr><th>Batter</th><th>R</th><th>B</th><th>4s</th><th>6s</th></tr></thead><tbody>${bat||"<tr><td colspan=5>No batting data</td></tr>"}</tbody></table><b style="display:block;margin-top:8px">Bowling</b><table class="finish-table"><thead><tr><th>Bowler</th><th>O</th><th>R</th><th>W</th><th>Wd</th><th>Nb</th></tr></thead><tbody>${bowl||"<tr><td colspan=6>No bowling data</td></tr>"}</tbody></table><b style="display:block;margin-top:8px">Partnerships</b><table class="finish-table"><thead><tr><th>Batters</th><th>Runs</th><th>Balls</th></tr></thead><tbody>${(inn.partnerships||[]).map(p=>`<tr><td>${safe(p.batters,"Batting pair")}</td><td>${Number(p.runs)||0}</td><td>${Number(p.balls)||0}</td></tr>`).join("")||"<tr><td colspan=3>No partnership data</td></tr>"}</tbody></table><b style="display:block;margin-top:8px">Fall of wickets</b><div class="finish-fow">${(inn.fallOfWickets||[]).map(w=>`<div>${Number(w.wicket)||0}-${Number(w.score)||0} · ${playerName(w.batter,"Batter")} (${safe(w.dismissal,"Wicket")}${w.fielder?` · ${safe(w.fielder)}`:""}) · ${safe(w.overs,"")} ov</div>`).join("")||"No wickets"}</div></section>`;
   }).join("")}</div>`||"<div class=finish-caption>Scorecard details are not available in the public match data yet.</div>";
  }else{clearTimeout(finishDelayTimer);completedMatchId=null;finish.classList.remove("show");$("lowerScoreboard").classList.remove("match-complete-hidden");}
  const loc=[d.MatchCountry||"India",d.MatchState||"" ,d.MatchCity||""].filter(Boolean).join(" · ").toUpperCase();

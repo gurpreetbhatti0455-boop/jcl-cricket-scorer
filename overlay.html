@@ -137,6 +137,17 @@
  .over-label{font-size:6px!important;transform:translateY(8px)!important}
 }
 @media(max-width:390px){.bowler-figures{font-size:5px!important}.bowler-extra{letter-spacing:-.15px}.batters,.center,.chase-panel,.bowling{padding-left:2px!important;padding-right:2px!important}}
+
+/* Refined balance: lower the central team and score stack; keep centre footer clear. */
+.center{padding-top:7px!important;gap:5px!important}
+.teams,.scoreline{transform:translateY(4px)}
+#target,.center-bottom{display:none!important}
+.chase-panel{align-items:center!important;text-align:center!important;justify-content:center!important;gap:3px!important}
+#targetCycle{max-width:100%;white-space:normal;text-align:center;line-height:1.15}
+#chaseInfo{border:0!important;background:transparent!important;padding:0!important;text-align:center!important;line-height:1.2}
+#inningsMeta{font-size:clamp(5px,.62vw,8px)!important;color:#dbe7f5!important;font-weight:900!important;text-align:center!important;white-space:nowrap}
+.bowler-announcement{color:#ffd166!important;text-transform:uppercase}
+
 </style>
 </head>
 <body>
@@ -245,45 +256,43 @@ function render(d){
  const targetCycle=$("targetCycle");
  const targetHeading=$("targetHeading");
  const inningsMeta=$("inningsMeta");
- const scoreInfoCycle=$("scoreInfoCycle");
  const oversLimit=Number(d.MaxOvers)||20;
  const projected=ballsFaced>0?Math.round((Number(d.Runs)||0)/(ballsFaced/6)*oversLimit):0;
  const currentRR=Number(d.RunRate||0).toFixed(2);
- inningsMeta.textContent=`INNINGS ${inningsNo} · ${oversLimit} OVERS · ${d.Status==="completed"?"COMPLETED":"LIVE"}`;
- if(targetNum>0 || inningsNo>=2){
-   targetHeading.style.display="block";
-   targetCycle.textContent=`TARGET ${targetNum||"—"}`;
-   chaseInfo.textContent=`NEED ${runsNeeded} RUNS IN ${ballsRemaining} BALLS`;
-   targetCycle.dataset.mode="target";
-   window.__jclRunsNeeded=runsNeeded;window.__jclBallsRemaining=ballsRemaining;window.__jclTargetValue=targetNum;window.__jclRequiredRate=ballsRemaining>0?runsNeeded/(ballsRemaining/6):0;
-   if(!window.__jclTargetCycleTimer){window.__jclTargetCycleTimer=setInterval(()=>{const a=$("targetCycle"),b=$("chaseInfo");if(!a||!b||!window.__jclTargetValue)return;const showNeed=a.dataset.mode!=="need";a.dataset.mode=showNeed?"need":"target";a.textContent=showNeed?`NEED ${Math.max(0,Number(window.__jclRunsNeeded)||0)} RUNS`:`TARGET ${Math.max(0,Number(window.__jclTargetValue)||0)}`;b.textContent=showNeed?`${Math.max(0,Number(window.__jclBallsRemaining)||0)} BALLS LEFT`:`REQUIRED RR ${Number(window.__jclRequiredRate||0).toFixed(2)}`;},5000);}
- } else {
-   targetHeading.style.display="none";
-   const tossText=String(d.Toss||"");
-   const tossWinner=(tossText.match(/^(.*?)\s+won the toss/i)||[])[1]||"TOSS NOT RECORDED";
-   const choiceMatch=tossText.match(/(?:chose|choose|elected)\s+to\s+(bat|bowl|field)/i);
-   const choice=choiceMatch?(choiceMatch[1].toLowerCase()==="field"?"BOWL":choiceMatch[1].toUpperCase()):"BAT";
-   targetCycle.textContent=tossWinner.toUpperCase();
-   chaseInfo.textContent=`${oversLimit} OVERS · PROJECTED ${projected}`;
-   targetCycle.dataset.mode="toss";
- }
- // The centre's lower line alternates every five seconds: toss decision, then current RR + projected total.
+ inningsMeta.textContent=`INNINGS ${inningsNo} · ${oversLimit} OVERS · LIVE`;
  const tossText=String(d.Toss||"");
  const tossWinner=(tossText.match(/^(.*?)\s+won the toss/i)||[])[1]||"TOSS NOT RECORDED";
  const choiceMatch=tossText.match(/(?:chose|choose|elected)\s+to\s+(bat|bowl|field)/i);
- const choice=choiceMatch?(choiceMatch[1].toLowerCase()==="field"?"bowl":"bat"):"bat";
- const tossLine=tossWinner!=="TOSS NOT RECORDED"?`${tossWinner.toUpperCase()} WON THE TOSS AND CHOSE TO ${choice.toUpperCase()}`:"TOSS NOT RECORDED";
- const statsLine=`CURRENT RR ${currentRR} · PROJECTED SCORE ${projected}`;
- if(scoreInfoCycle){
-   if(!window.__jclInfoCycleTimer){window.__jclInfoCycleTimer=setInterval(()=>{const el=$("scoreInfoCycle");if(!el)return;el.dataset.mode=el.dataset.mode==="stats"?"toss":"stats";el.textContent=el.dataset.mode==="stats"?(window.__jclStatsLine||""):(window.__jclTossLine||"");},5000);}
-   window.__jclTossLine=tossLine;window.__jclStatsLine=statsLine;
-   if(!scoreInfoCycle.dataset.mode){scoreInfoCycle.dataset.mode="toss";scoreInfoCycle.textContent=tossLine;}
-   else scoreInfoCycle.textContent=scoreInfoCycle.dataset.mode==="stats"?statsLine:tossLine;
+ const choice=choiceMatch?(choiceMatch[1].toLowerCase()==="field"?"BOWL":choiceMatch[1].toUpperCase()):"BAT";
+ const tossLine=tossWinner!=="TOSS NOT RECORDED"?`${tossWinner.toUpperCase()} WON THE TOSS AND CHOSE TO ${choice}`:"TOSS NOT RECORDED";
+ if(targetNum>0 || inningsNo>=2){
+   if(window.__jclFirstInningsCycle){clearInterval(window.__jclFirstInningsCycle);window.__jclFirstInningsCycle=null;}
+   targetHeading.style.display="block";
+   targetCycle.textContent=`TARGET ${targetNum||"—"}`;
+   chaseInfo.textContent=`NEED ${runsNeeded} RUNS · ${ballsRemaining} BALLS LEFT`;
+   targetCycle.dataset.mode="target";
+   window.__jclRunsNeeded=runsNeeded;window.__jclBallsRemaining=ballsRemaining;window.__jclTargetValue=targetNum;window.__jclRequiredRate=ballsRemaining>0?runsNeeded/(ballsRemaining/6):0;
+   if(!window.__jclTargetCycleTimer){window.__jclTargetCycleTimer=setInterval(()=>{const a=$("targetCycle"),b=$("chaseInfo");if(!a||!b||!window.__jclTargetValue)return;const mode=a.dataset.mode||"target";if(mode==="target"){a.dataset.mode="need";a.textContent=`NEED ${Math.max(0,Number(window.__jclRunsNeeded)||0)} RUNS`;b.textContent=`${Math.max(0,Number(window.__jclBallsRemaining)||0)} BALLS LEFT`;}else if(mode==="need"){a.dataset.mode="rate";a.textContent=`REQUIRED RR ${Number(window.__jclRequiredRate||0).toFixed(2)}`;b.textContent=`TARGET ${Math.max(0,Number(window.__jclTargetValue)||0)}`;}else{a.dataset.mode="target";a.textContent=`TARGET ${Math.max(0,Number(window.__jclTargetValue)||0)}`;b.textContent=`NEED ${Math.max(0,Number(window.__jclRunsNeeded)||0)} RUNS · ${Math.max(0,Number(window.__jclBallsRemaining)||0)} BALLS LEFT`; }},4000);}
+ } else {
+   if(window.__jclTargetCycleTimer){clearInterval(window.__jclTargetCycleTimer);window.__jclTargetCycleTimer=null;}
+   targetHeading.style.display="none";
+   window.__jclFirstInningsViews=[
+     {top:tossLine,bottom:`${oversLimit} OVERS MATCH · PROJECTED ${projected}`},
+     {top:`${Math.floor(ballsFaced/6)}.${ballsFaced%6} OVERS COMPLETED`,bottom:`PROJECTED SCORE ${projected}`},
+     {top:`CURRENT RUN RATE ${currentRR}`,bottom:`PROJECTED SCORE ${projected}`}
+   ];
+   if(!window.__jclFirstInningsCycle){window.__jclFirstInningsCycle=setInterval(()=>{window.__jclFirstInningsIndex=((window.__jclFirstInningsIndex||0)+1)%3;const v=window.__jclFirstInningsViews?.[window.__jclFirstInningsIndex];if(v){$("targetCycle").textContent=v.top;$("chaseInfo").textContent=v.bottom;}},3000);}
+   const view=window.__jclFirstInningsViews[window.__jclFirstInningsIndex||0];targetCycle.textContent=view.top;chaseInfo.textContent=view.bottom;
  }
+ // No duplicate innings/RR/toss line under the central score; all match context is in the third panel.
  $("striker").textContent=safe(d.Striker,"Batter 1");$("nonStriker").textContent=safe(d.NonStriker,"Batter 2");
  $("strikerStats").textContent=`${d.StrikerRuns??0} (${d.StrikerBalls??0})`;$("nonStrikerStats").textContent=`${d.NonStrikerRuns??0} (${d.NonStrikerBalls??0})`;
  $("strikerExtras").textContent=`4s: ${d.StrikerFours??0} · 6s: ${d.StrikerSixes??0}`;$("nonStrikerExtras").textContent=`4s: ${d.NonStrikerFours??0} · 6s: ${d.NonStrikerSixes??0}`;
- $("bowler").textContent=safe(d.Bowler,"Bowler");const legal=Number(d.BowlerLegal)||0;const bo=`${Math.floor(legal/6)}.${legal%6}`;
+ const bowlerName=safe(d.Bowler,"Bowler");
+ if(window.__jclLastBowlerName===undefined){window.__jclLastBowlerName=bowlerName;$("bowler").textContent=bowlerName;}
+ else if(bowlerName!==window.__jclLastBowlerName){window.__jclLastBowlerName=bowlerName;const el=$("bowler");el.textContent=`${bowlerName} · BOWLING NOW`;el.classList.add("bowler-announcement");clearTimeout(window.__jclBowlerAnnounceTimer);window.__jclBowlerAnnounceTimer=setTimeout(()=>{if(window.__jclLastBowlerName===bowlerName){el.textContent=bowlerName;el.classList.remove("bowler-announcement");}},2600);}
+ else if(!$("bowler").classList.contains("bowler-announcement"))$("bowler").textContent=bowlerName;
+ const legal=Number(d.BowlerLegal)||0;const bo=`${Math.floor(legal/6)}.${legal%6}`;
  const econ=legal?((Number(d.BowlerRuns)||0)/(legal/6)).toFixed(2):"0.00";$("bowlerFigures").innerHTML=`<span>${d.BowlerWickets??0} W</span> · ${d.BowlerRuns??0} R · ${bo} OV <span class="bowler-extra">(ECO ${econ} · WD ${d.BowlerWides??0} · NB ${d.BowlerNoBalls??0})</span>`;
  $("overLabel").textContent=`OVER ${d.CurrentOverNo||Math.floor((Number(d.LegalBalls)||0)/6)+1}`;
  let balls=Array.isArray(d.CurrentOverBalls)?d.CurrentOverBalls:[];if(!balls.length&&Array.isArray(d.RecentOverBalls))balls=d.RecentOverBalls.slice(-6);const row=$("ballRow");row.innerHTML="";

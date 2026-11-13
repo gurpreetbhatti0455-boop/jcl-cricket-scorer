@@ -1,15 +1,16 @@
-Cricket Scorer by JCL — Compact Overlay Update
+Cricket Scorer by JCL — Overlay refinement
 
-Included: overlay.html
+Replace only overlay.html in the existing GitHub repository.
 
 Changes:
-- Lower-third scoreboard width is 99%, leaving 0.5% margin on both sides.
-- Overlay height is reduced to approximately 60% of the previous 14.25vh sizing (8.55vh target), with responsive minimums for readability.
-- Bowler figures are displayed on one line: wickets, runs, overs, then economy/wides/no-balls in brackets.
-- The current-over ball chips remain on the line below.
+1. Moved the central team/score group slightly lower for visual balance.
+2. Removed the duplicate Innings 1 / RR line below the central score.
+3. First innings third panel rotates every 3 seconds:
+   - toss winner and batting/bowling decision
+   - overs completed and projected score
+   - current run rate and projected score
+4. Second innings shows target, runs/balls remaining and required run rate, cycling every 4 seconds.
+5. When the bowler changes, the new bowler is announced as “BOWLING NOW” for about 2.6 seconds, then the normal name returns.
+6. Kept the compact lower-third layout and existing 0.5% left/right margins.
 
-Deployment:
-Replace only overlay.html in the existing GitHub repository, commit, wait for GitHub Pages, then refresh/re-add the overlay URL in PRISM.
-
-Validation:
-JavaScript syntax check passed. Full live Firebase/PRISM visual testing remains to be done.
+Validation: JavaScript syntax check passed. Live Firebase and PRISM display should still be tested after deployment.

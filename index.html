@@ -483,7 +483,7 @@ function ensureCurrentInningsSaved(){
 }
 function getMatchResult(){
  if(state.inningsNo<2||!state.innings.length)return "";
- const first=state.innings[0],chase=cur(),target=first.runs+1;
+ const first=state.innings[0],chase=cur(),target=(Number(state.manualTarget)>0?Number(state.manualTarget):(Number(first.runs)||0)+1);
  if(chase.runs>=target){
   const wicketsLeft=Math.max(0,10-chase.wickets);
   return `${state.teams[chase.batting]} won by ${wicketsLeft} wicket${wicketsLeft===1?"":"s"}.`;
@@ -498,21 +498,37 @@ function buildPrintableScorecard(){
   all.push({...clone(c),summary:{team:state.teams[c.batting],runs:c.runs,wickets:c.wickets,legalBalls:c.legalBalls}});
  }
  const escHtml=s=>String(s??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+ const playerName=s=>String(s??"").trim().toLowerCase().replace(/(^|\s)([^\s])/g,(_,space,ch)=>space+ch.toUpperCase());
  const result=getMatchResult()||"Match in progress";
  const teamScore=name=>{
   const inn=all.find(x=>(x.summary?.team||state.teams[x.batting])===name);
   return inn?`${inn.runs}/${inn.wickets} (${Math.floor(inn.legalBalls/6)}.${inn.legalBalls%6} overs)`:"—";
  };
  const sections=all.map((inn,idx)=>{
-  const battingRows=(inn.batters||[]).map(b=>`<tr><td>${escHtml(b.name)}</td><td>${b.runs||0}</td><td>${b.balls||0}</td><td>${b.fours||0}</td><td>${b.sixes||0}</td><td>${b.out?"Out":"Not out"}</td></tr>`).join("");
-  const bowlingRows=Object.values(inn.bowlers||{}).map(b=>`<tr><td>${escHtml(b.name)}</td><td>${Math.floor((b.legal||0)/6)}.${(b.legal||0)%6}</td><td>${b.runs||0}</td><td>${b.wickets||0}</td><td>${((b.legal||0)/6)>0?((b.runs||0)/((b.legal||0)/6)).toFixed(2):"0.00"}</td></tr>`).join("");
+  const battingRows=(inn.batters||[]).map(b=>{
+   const nm=playerName(b.name)+(b.out?"":"*");
+   return `<tr><td class="name">${escHtml(nm)}</td><td>${Number(b.runs)||0}</td><td>${Number(b.balls)||0}</td><td>${Number(b.fours)||0}</td><td>${Number(b.sixes)||0}</td><td>${b.out?"Out":"Not out"}</td></tr>`;
+  }).join("");
+  const bowlingRows=Object.values(inn.bowlers||{}).map(b=>{
+   const legal=Number(b.legal)||0,runs=Number(b.runs)||0;
+   return `<tr><td class="name">${escHtml(playerName(b.name))}</td><td>${Math.floor(legal/6)}.${legal%6}</td><td>${runs}</td><td>${Number(b.wickets)||0}</td><td>${legal?((runs/(legal/6)).toFixed(2)):"0.00"}</td></tr>`;
+  }).join("");
   const ex=inn.extras||{};
-  const name=inn.summary?.team||state.teams[inn.batting];
-  return `<section><h2>${idx===0?"1st Innings":"2nd Innings"} <span>${escHtml(name)}</span></h2><div class="innings-score">${inn.runs}/${inn.wickets} <small>(${Math.floor(inn.legalBalls/6)}.${inn.legalBalls%6} overs)</small></div><h3>Batting scorecard</h3><table><thead><tr><th>Batter</th><th>R</th><th>B</th><th>4s</th><th>6s</th><th>Status</th></tr></thead><tbody>${battingRows||'<tr><td colspan="6">No batting figures</td></tr>'}</tbody></table><h3>Bowling figures</h3><table><thead><tr><th>Bowler</th><th>O</th><th>R</th><th>W</th><th>Econ</th></tr></thead><tbody>${bowlingRows||'<tr><td colspan="5">No bowling figures</td></tr>'}</tbody></table><p class="extras"><b>Extras:</b> Wd ${ex.wides||0} · Nb ${ex.noBalls||0} · Byes ${ex.byes||0} · Leg-byes ${ex.legByes||0} · Penalty ${ex.penalty||0}</p><h3>Partnerships</h3>${(inn.partnerships||[]).length?(inn.partnerships||[]).map((p,i)=>`<p class="fow-row">${i+1}. ${escHtml(p.batters||"Batting pair")} — ${Number(p.runs)||0} runs (${Number(p.balls)||0} balls)</p>`).join(""):'<p class="fow-row">No completed partnerships recorded.</p>'}<h3>Fall of wickets</h3>${(inn.fallOfWickets||[]).length?(inn.fallOfWickets||[]).map(w=>`<p class="fow-row">${w.wicket}-${w.score} (${escHtml(w.batter||"Batter")}, ${escHtml(w.overs||"")} ov) — ${escHtml(w.dismissal||"Wicket")}${w.fielder?` (by ${escHtml(w.fielder)})`:""}</p>`).join(""):'<p class="fow-row">No wickets fell.</p>'}</section>`;
+  const name=inn.summary?.team||state.teams[inn.batting]||`Team ${idx+1}`;
+  const partnerships=[...(inn.partnerships||[])];
+  const activeRuns=Number(inn.partnership)||0,activeBalls=Number(inn.partnershipBalls)||0;
+  if(activeRuns>0||activeBalls>0){
+   const pair=[inn.batters?.[inn.striker],inn.batters?.[inn.nonStriker]].filter(Boolean);
+   const activeNames=pair.map(b=>playerName(b.name)+(b.out?"":"*")).join(" & ");
+   partnerships.push({batters:activeNames||"Not-out batters",runs:activeRuns,balls:activeBalls,active:true});
+  }
+  const partnershipHtml=partnerships.length?partnerships.map((p,i)=>`<div class="detail-row">${i+1}. ${escHtml(p.batters||"Batting pair")}${p.active?" (not out)":""} — <b>${Number(p.runs)||0} runs</b> (${Number(p.balls)||0} balls)</div>`).join(""):'<div class="detail-row">No partnership data recorded.</div>';
+  const fowHtml=(inn.fallOfWickets||[]).length?(inn.fallOfWickets||[]).map(w=>`<div class="detail-row">${w.wicket}-${w.score} (${escHtml(playerName(w.batter||"Batter"))}, ${escHtml(w.overs||"")} ov) — ${escHtml(w.dismissal||"Wicket")}${w.fielder?` (by ${escHtml(playerName(w.fielder))})`:""}</div>`).join(""):'<div class="detail-row">No wickets fell.</div>';
+  return `<section class="innings-card"><h2>${idx===0?"1st Innings":"2nd Innings"} <span>${escHtml(name)}</span></h2><div class="innings-score">${inn.runs}/${inn.wickets} <small>(${Math.floor(inn.legalBalls/6)}.${inn.legalBalls%6} overs)</small></div><div class="score-columns"><div><h3>Batting</h3><table><thead><tr><th>Batter</th><th>R</th><th>B</th><th>4s</th><th>6s</th><th>Status</th></tr></thead><tbody>${battingRows||'<tr><td colspan="6">No batting figures</td></tr>'}</tbody></table></div><div><h3>Bowling</h3><table><thead><tr><th>Bowler</th><th>O</th><th>R</th><th>W</th><th>Econ</th></tr></thead><tbody>${bowlingRows||'<tr><td colspan="5">No bowling figures</td></tr>'}</tbody></table></div></div><p class="extras"><b>Extras:</b> Wd ${ex.wides||0} · Nb ${ex.noBalls||0} · Byes ${ex.byes||0} · Leg-byes ${ex.legByes||0} · Penalty ${ex.penalty||0}</p><div class="detail-columns"><div><h3>Partnerships</h3>${partnershipHtml}</div><div><h3>Fall of Wickets</h3>${fowHtml}</div></div></section>`;
  }).join("");
  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>JCL Scorecard</title><style>
-*{box-sizing:border-box}body{font-family:Arial,sans-serif;color:#263746;padding:18px;max-width:820px;margin:auto;font-size:14px}header{background:#456b8a;color:#fff;border-radius:12px;padding:18px;margin-bottom:16px}h1{font-size:23px;margin:0 0 5px}header p{margin:4px 0;color:#e5eef5}.result{font-size:18px;font-weight:800;color:#294c68;background:#eaf2f8;border-left:5px solid #456b8a;padding:12px;border-radius:7px;margin:14px 0 20px}.team-results{display:flex;gap:10px}.team-results div{flex:1;background:#f1f6fa;padding:10px;border-radius:7px;font-weight:700}section{margin:20px 0;page-break-inside:avoid}h2{background:#456b8a;color:white;padding:10px 12px;border-radius:7px;font-size:17px;margin:0 0 8px}h2 span{float:right;font-weight:600}h3{color:#456b8a;font-size:14px;margin:14px 0 6px}.innings-score{font-size:21px;font-weight:800;margin:8px 2px;color:#243e54}.innings-score small{font-size:13px;font-weight:500;color:#687987}table{width:100%;border-collapse:collapse;margin:0 0 10px;font-size:13px}th,td{border-bottom:1px solid #d8e1e8;padding:8px 6px;text-align:left}th{background:#edf3f7;color:#385a74}tr:nth-child(even) td{background:#fafcfd}.extras{background:#f3f6f8;padding:9px;border-radius:6px;font-size:12px}.fow-row{background:#edf3f7;border-left:3px solid #456b8a;padding:7px 9px;margin:5px 0;border-radius:4px;font-size:12px}.foot{font-size:11px;color:#7a8791;text-align:center;margin-top:24px}@media print{body{padding:8mm}header,h2{print-color-adjust:exact;-webkit-print-color-adjust:exact}section{page-break-inside:avoid}}
-</style></head><body><header><h1>${escHtml(state.matchName||"JCL T20 Match")}</h1><p>Cricket Scorer by JCL</p><p>${escHtml(state.teams[0])} vs ${escHtml(state.teams[1])} · ${state.maxOvers} overs</p><p>Toss: ${escHtml(state.toss||"Not recorded")}</p></header><div class="result">${escHtml(result)}</div><div class="team-results"><div>${escHtml(state.teams[0])}<br>${escHtml(teamScore(state.teams[0]))}</div><div>${escHtml(state.teams[1])}<br>${escHtml(teamScore(state.teams[1]))}</div></div>${sections}<p class="foot">Generated by Cricket Scorer by JCL</p><script>window.onload=()=>setTimeout(()=>window.print(),350)<${"/"}script></body></html>`;
+*{box-sizing:border-box}body{font-family:Arial,sans-serif;color:#263746;padding:14px;max-width:1500px;margin:auto;font-size:15px}header{background:#193b57;color:#fff;border-radius:10px;padding:16px;margin-bottom:12px}h1{font-size:25px;margin:0 0 5px}header p{margin:4px 0;color:#e5eef5}.result{font-size:20px;font-weight:800;color:#173d5b;background:#eaf2f8;border-left:5px solid #456b8a;padding:12px;border-radius:7px;margin:12px 0}.team-results{display:flex;gap:10px;margin-bottom:12px}.team-results div{flex:1;background:#f1f6fa;padding:10px;border-radius:7px;font-weight:700;font-size:15px}.innings-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}.innings-card{min-width:0;border:1px solid #d7e0e8;border-radius:9px;padding:10px;margin:0;break-inside:avoid}h2{background:#315d7d;color:white;padding:10px 11px;border-radius:6px;font-size:17px;margin:0 0 7px}h2 span{float:right;font-weight:700}.innings-score{font-size:22px;font-weight:800;margin:7px 2px;color:#243e54}.innings-score small{font-size:13px;font-weight:500;color:#687987}.score-columns{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}h3{color:#315d7d;font-size:15px;margin:10px 0 6px}table{width:100%;border-collapse:collapse;margin:0 0 8px;font-size:14px}th,td{border-bottom:1px solid #d8e1e8;padding:7px 5px;text-align:left;white-space:nowrap}th{background:#edf3f7;color:#385a74;font-weight:800}td.name{font-weight:700;white-space:normal}tr:nth-child(even) td{background:#fafcfd}.extras{background:#f3f6f8;padding:9px;border-radius:6px;font-size:13px;margin:6px 0}.detail-columns{display:grid;grid-template-columns:1fr 1fr;gap:10px}.detail-row{background:#edf3f7;border-left:3px solid #456b8a;padding:7px 8px;margin:4px 0;border-radius:4px;font-size:13px;line-height:1.35}.foot{font-size:11px;color:#7a8791;text-align:center;margin-top:14px}@media(max-width:760px){body{padding:9px;font-size:14px}.innings-grid{grid-template-columns:1fr}.score-columns{grid-template-columns:1fr 1fr;gap:6px}table{font-size:12px}th,td{padding:6px 3px}.detail-columns{grid-template-columns:1fr 1fr}.innings-card{padding:8px}h2{font-size:15px}h2 span{font-size:13px}}@media(max-width:420px){.score-columns,.detail-columns{grid-template-columns:1fr}.team-results{font-size:13px}}@media print{body{padding:7mm;max-width:none}header,h2{print-color-adjust:exact;-webkit-print-color-adjust:exact}.innings-grid{grid-template-columns:1fr 1fr}.innings-card{break-inside:avoid}}
+</style></head><body><header><h1>${escHtml(state.matchName||"JCL T20 Match")}</h1><p>Cricket Scorer by JCL</p><p>${escHtml(state.teams[0])} vs ${escHtml(state.teams[1])} · ${state.maxOvers} overs</p><p>Toss: ${escHtml(state.toss||"Not recorded")}</p></header><div class="result">${escHtml(result)}</div><div class="team-results"><div>${escHtml(state.teams[0])}<br>${escHtml(teamScore(state.teams[0]))}</div><div>${escHtml(state.teams[1])}<br>${escHtml(teamScore(state.teams[1]))}</div></div><div class="innings-grid">${sections}</div><p class="foot">Generated by Cricket Scorer by JCL</p><script>window.onload=()=>setTimeout(()=>window.print(),350)<${"/"}script></body></html>`;
 }
 function downloadScorecardPDF(){
  const html=buildPrintableScorecard();
@@ -541,7 +557,7 @@ function saveMultiMatchResult(){
  const teamA=state.teams[0]||"Team 1",teamB=state.teams[1]||"Team 2";
  const score=(name)=>{const inn=state.innings.find(x=>x.summary&&x.summary.team===name);if(inn)return `${inn.summary.runs}/${inn.summary.wickets}`;if(state.teams[second.batting]===name)return `${second.runs}/${second.wickets}`;return "—"};
  const result=getMatchResult();let winner="";if(result&&!/^Match tied/i.test(result)){if(result.startsWith(teamA))winner=teamA;else if(result.startsWith(teamB))winner=teamB;else winner=result.split(" won by ")[0]||"";}
- const manOfMatch=(prompt("Man of the Match (enter player name, or leave blank):","")||"").trim();
+ const manOfMatch="";
  const timestamp=Date.now();
  results.push({id,sessionId:session.id,timestamp,number:results.length+1,teamA,teamB,winner,result:result||"Match completed",scoreA:score(teamA),scoreB:score(teamB),manOfMatch,date:new Date(timestamp).toLocaleString()});
  localStorage.setItem("jclMultiMatchResults",JSON.stringify(results));
@@ -641,13 +657,14 @@ if(state.inningsNo===1&&(state.status==="innings-complete"||c.legalBalls>=state.
 }
 if(state.inningsNo===2&&state.innings.length){
  const firstInnings=state.innings[0];
- if(c.runs>=firstInnings.runs+1||c.wickets>=Math.max(1,(Number(state.playerCount)||11)-1)||c.legalBalls>=state.maxOvers*6){
+ const chaseTarget=Number(state.manualTarget)>0?Number(state.manualTarget):(Number(firstInnings.runs)||0)+1;
+ if(c.runs>=chaseTarget||c.wickets>=Math.max(1,(Number(state.playerCount)||11)-1)||c.legalBalls>=state.maxOvers*6){
   state.status="completed";ensureCurrentInningsSaved();
   pendingBowlerSelection=false;$("bowlerBackdrop").classList.add("hidden");
   $("status").textContent=getMatchResult();
  }
 }
-let batTeam=state.teams[c.batting],bowlTeam=state.teams[1-c.batting],target=manualTarget||(state.manualTarget>0?Number(state.manualTarget):(state.innings.length?state.innings[0].runs+1:null));
+let batTeam=state.teams[c.batting],bowlTeam=state.teams[1-c.batting],target=(Number(state.manualTarget)>0?Number(state.manualTarget):(state.innings.length?Number(state.innings[0].runs)+1:null));
 const inningsOrdinal=state.inningsNo===1?"1st Innings":"2nd Innings";
 $("inningsLabel").textContent=`${inningsOrdinal} • ${batTeam}`;
 if(state.status==="innings-complete")$("status").textContent=state.inningsNo===1?"Innings complete. Tap any run button to enter the second innings players.":"Second innings complete. Match finished.";
@@ -685,11 +702,13 @@ if(resultPanel){
   resultPanel.classList.remove("hidden");
   const first=state.innings[0],second=cur();
   const scoreForTeam=name=>{const inn=state.innings.find(x=>x.summary&&x.summary.team===name);if(inn)return `${inn.summary.runs}/${inn.summary.wickets}`;if(state.teams[second.batting]===name)return `${second.runs}/${second.wickets}`;return "—"};
-  resultPanel.innerHTML=`<div class="result-title">MATCH COMPLETED</div><div class="result-winner">${esc(getMatchResult())}</div><div class="muted">${esc(state.teams[0])}: ${scoreForTeam(state.teams[0])} &nbsp; • &nbsp; ${esc(state.teams[1])}: ${scoreForTeam(state.teams[1])}</div><div class="result-actions"><button class="btn soft" id="downloadPdfBtn">Download Scorecard PDF</button><button class="btn" id="viewScorecardBtn">View full scorecard</button></div>${localStorage.getItem("jclMultipleMatchMode")==="1"?`<div class="next-match-note">Multiple Match Mode is ON. Ready for the next match?</div><div class="result-actions"><button class="btn green" id="nextMatchBtn">＋ NEXT MATCH</button><button class="btn" id="finishMultipleBtn">End Multiple-Match Session</button></div>`:""}<div id="fullScorecardDetails" class="hidden"></div>`;
+  resultPanel.innerHTML=`<div class="result-title">MATCH COMPLETED</div><div class="result-winner">${esc(getMatchResult())}</div><div class="muted">${esc(state.teams[0])}: ${scoreForTeam(state.teams[0])} &nbsp; • &nbsp; ${esc(state.teams[1])}: ${scoreForTeam(state.teams[1])}</div><div class="result-actions"><button class="btn soft" id="downloadPdfBtn">Download Scorecard PDF</button><button class="btn" id="viewScorecardBtn">Hide full scorecard</button></div><div id="finalScorecardFrameWrap" class="final-scorecard-frame-wrap"><iframe id="finalScorecardFrame" title="Complete match scorecard" style="width:100%;height:900px;border:1px solid #d7e0e8;border-radius:8px;background:#fff"></iframe></div>${localStorage.getItem("jclMultipleMatchMode")==="1"?`<div class="next-match-note">Multiple Match Mode is ON. Ready for the next match?</div><div class="result-actions"><button class="btn green" id="nextMatchBtn">＋ NEXT MATCH</button><button class="btn" id="finishMultipleBtn">End Multiple-Match Session</button></div>`:""}<div id="fullScorecardDetails" class="hidden"></div>`;
   $("downloadPdfBtn").onclick=downloadScorecardPDF;
   const nextMatchBtn=$("nextMatchBtn");if(nextMatchBtn)nextMatchBtn.onclick=()=>{prepareNextMultipleMatch();};
   const finishMultipleBtn=$("finishMultipleBtn");if(finishMultipleBtn)finishMultipleBtn.onclick=()=>{const session=(()=>{try{return JSON.parse(localStorage.getItem("jclMultiSession")||"null")}catch(e){return null}})();if(!session||!finishMultiSession(session.id,true))return;showPanel("Multiple-Match Session Completed",`<div class="guide-step">This session is saved in Multiple Match History. Open its <b>Point Table</b> to view standings, or choose <b>Open Scoreboard</b> to select an individual match.</div><button class="btn green home-action" id="multiDoneHistory">Open Multiple Match History</button><button class="btn home-action" id="multiDoneHome">Back to Home</button>`);$("multiDoneHistory").onclick=showMultiSessionHistory;$("multiDoneHome").onclick=()=>window.__JCL_showHome?.();};
-  $("viewScorecardBtn").onclick=()=>{const d=$("fullScorecardDetails");d.classList.toggle("hidden");d.innerHTML=state.innings.map((x,i)=>`<div style="padding:8px 0;border-bottom:1px solid #ddd"><b>${ordinalInningsName(i+1)} — ${esc(x.summary?.team||state.teams[x.batting])}</b><br>${x.runs}/${x.wickets} (${Math.floor(x.legalBalls/6)}.${x.legalBalls%6} overs)</div>`).join("")};
+  const scorecardFrame=$("finalScorecardFrame");
+  if(scorecardFrame){const printable=buildPrintableScorecard().replace(/<script>[\s\S]*?<\/script>/gi,"");scorecardFrame.srcdoc=printable;}
+  $("viewScorecardBtn").onclick=()=>{const wrap=$("finalScorecardFrameWrap"),hidden=wrap.classList.toggle("hidden");$("viewScorecardBtn").textContent=hidden?"View full scorecard":"Hide full scorecard"};
  }else{resultPanel.classList.add("hidden");resultPanel.innerHTML=""}
 }
 document.querySelectorAll("[data-run]").forEach(b=>b.disabled=state.status==="completed"||pendingBowlerSelection);
@@ -1077,7 +1096,7 @@ window.__JCL_getFirebasePayload=()=>{
  const c=state.current||{}, battingIndex=Number(c.batting)||0, batting=state.teams[battingIndex]||"Team A", bowling=state.teams[1-battingIndex]||"Team B";
  const legal=Number(c.legalBalls)||0, runs=Number(c.runs)||0, inn=state.inningsNo||1;
  const striker=(c.batters||[])[c.striker]||{}, non=(c.batters||[])[c.nonStriker]||{};
- const target=manualTarget||(Number(state.manualTarget)>0?Number(state.manualTarget):(inn>1&&state.innings?.[0]?Number(state.innings[0].runs)+1:null));
+ const target=(Number(state.manualTarget)>0?Number(state.manualTarget):(inn>1&&state.innings?.[0]?Number(state.innings[0].runs)+1:null));
  const bowlerStats=(c.bowlers||{})[c.bowler]||{};
  const currentOverNo=Math.floor(legal/6)+1;
  const currentOverBalls=(c.deliveryLog||[]).filter(d=>Number(d.over)===currentOverNo).map(d=>({ball:d.ball,label:d.label,runs:d.runs}));

@@ -143,16 +143,24 @@ header{background:#456b8a!important;border-bottom-color:#385a76!important}
 .match-history-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:10px}
 .match-history-actions .btn{font-size:12px;padding:9px 4px;min-width:0;white-space:nowrap}
 @media(max-width:390px){.match-history-actions{gap:4px}.match-history-actions .btn{font-size:10px;padding:8px 2px}.match-history-team{font-size:14px}.match-history-team strong{font-size:18px}}
+
+.home-logo-img{display:block;width:104px;height:104px;object-fit:contain;border-radius:22px;margin:0 auto 12px;background:#fff;box-shadow:0 4px 14px #20304022}
+.delete-account-link{display:block;width:max-content;max-width:100%;margin:24px auto 0;padding:8px 16px;border:1px solid #d9a0a4;border-radius:9px;background:#fff7f7;color:#a20e1b;font-size:12px;font-weight:700;text-decoration:none;text-align:center}
+.delete-account-link:active{background:#ffe9eb}
+
+/* JCL official supplied cricket logo */
+.home-logo-img{width:112px;height:112px;object-fit:contain;background:#fff}
+.logo-img{width:48px;height:48px;object-fit:contain;background:#fff}
+#homeActions .delete-account-link{position:static!important;float:none!important;clear:both!important;display:block!important;width:max-content!important;max-width:100%;margin:28px auto 0!important;padding:7px 14px!important;min-height:0!important;font-size:12px!important;line-height:1.3!important;border:1px solid #d9a0a4!important;border-radius:9px!important;background:#fff7f7!important;color:#a20e1b!important;text-align:center!important;text-decoration:none!important}
 </style>
 </head>
 <body class="home-mode">
 <section id="jclHome" class="home-shell">
  <div class="home-card">
-  <img class="home-logo-img" src="jcl-logo.png" alt="Cricket Scorer by JCL logo"><h1>JCL CRICKET SCORER</h1><p class="home-sub">Live scoring • Match management</p>
+  <img class="home-logo-img" src="./jcl-logo-icon-new.png" alt="Cricket Scorer by JCL logo"><h1>JCL CRICKET SCORER</h1><p class="home-sub">Live scoring • Match management</p>
   <div id="googleSignInArea"><p>Sign in with your Google account to save and access your matches.</p><button id="googleSignInBtn" class="btn green home-action">Continue with Google</button></div>
   <div id="homeActions" class="hidden">
    <div class="signed-row"><span id="signedInLabel">Signed in</span><button id="signOutBtn" class="btn soft">Sign out</button></div>
-   <a class="btn red home-action" href="delete-account.html" style="text-decoration:none;text-align:center">Delete My Account</a>
    <button id="homeNewMatch" class="btn green home-action">＋ New Match</button>
    <button id="homeMultipleMatches" class="btn home-action">▦ Multiple Matches</button>
    <button id="homeHistory" class="btn home-action">◷ Match History</button>
@@ -160,6 +168,7 @@ header{background:#456b8a!important;border-bottom-color:#385a76!important}
    <button id="homeInstructions" class="btn home-action">ⓘ Instructions</button>
    <p id="homeStatus" class="status" role="status"></p>
    <div class="guide-step" style="margin-top:18px"><b>Instructions</b><br>1. Tap <b>New Match</b> to start a fresh match.<br>2. Every match gets its own unique Match ID automatically. Enter the match country, state and city/ground for the broadcast header.<br>3. Your score is saved against that same ID and appears in <b>Match History</b>.<br>4. Use <b>Match History</b> to open a previous single match, resume it, or copy its overlay link.<br>5. Use <b>Multiple Matches</b> when you want to score several matches with a shared team list. End the session to finalize its points table.<br>6. For a live stream, copy the match Overlay Link and add it in PRISM Live Studio.<br><br>Old matches are no longer shown in a separate Live Matches list. Their saved records remain in Match History.</div>
+   <a class="delete-account-link" href="delete-account.html">Delete My Account</a>
   </div>
  </div>
 </section>
@@ -177,7 +186,7 @@ body.home-mode>header,body.home-mode>main,body.home-mode>footer{display:none!imp
 @media(min-width:700px){.home-shell{align-items:center}}
 </style>
 
-<header><div class="brand"><img class="logo-img" src="jcl-logo-icon.png" alt="Cricket Scorer by JCL"><div style="flex:1"><h1>Cricket Scorer by JCL</h1><div class="tag" id="tagline">Professional scoring • English / ਪੰਜਾਬੀ</div><div id="multiModeBadge" class="multi-mode-badge">▦ MULTIPLE MATCH MODE · 1 OVER</div></div><button class="btn soft" id="mainMenuBtn" aria-label="Match menu">•••</button><button class="btn soft" id="returnHomeBtn" aria-label="Home">Home</button></div></header>
+<header><div class="brand"><img class="logo-img" src="./jcl-logo-icon-new.png" alt="Cricket Scorer by JCL"><div style="flex:1"><h1>Cricket Scorer by JCL</h1><div class="tag" id="tagline">Professional scoring • English / ਪੰਜਾਬੀ</div><div id="multiModeBadge" class="multi-mode-badge">▦ MULTIPLE MATCH MODE · 1 OVER</div></div><button class="btn soft" id="mainMenuBtn" aria-label="Match menu">•••</button><button class="btn soft" id="returnHomeBtn" aria-label="Home">Home</button></div></header>
 <main>
 <section class="card setup">
 <div class="score-head"><h2 id="setupTitle">Match setup</h2><button class="btn soft" id="langBtn">ਪੰਜਾਬੀ / English</button></div>

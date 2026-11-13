@@ -1,20 +1,23 @@
-Cricket Scorer by JCL — Full package with Bowler / This Over layout update
+CRICKET SCORER BY JCL - FINAL OVERLAY UPDATE
 
-Files:
-- index.html: current scorer application file included for a complete backup/package.
-- overlay.html: updated PRISM overlay.
+Files included:
+- index.html: scorer application file (included unchanged from the previous full package)
+- overlay.html: updated PRISM broadcast overlay
 
-Overlay changes:
-1. Bowler heading is shown at the top with OVER number at the right.
-2. Bowler name appears on the next line.
-3. Bowler figures (wickets, runs, overs) appear on the next line.
-4. THIS OVER: appears immediately before the ball-by-ball row; the separate top "Bowler · This over" heading has been removed.
+Changes in this update:
+1. SIX / FOUR / WICKET / milestone celebration temporarily hides the live lower scoreboard, so the celebration text is shown cleanly. The scoreboard returns after the animation.
+2. Main score (runs/wickets and overs) is lifted slightly and given a little more bottom spacing.
+3. Third / chase information panel is nudged slightly down and remains vertically centered.
+4. The separate green result strip is disabled.
+5. After the existing 15-second celebration delay, the final match-result panel covers the entire lower scoreboard. The live scoreboard disappears while the result panel is shown.
+6. First innings and second innings scorecards remain side-by-side, with compact batting, bowling, partnerships and fall-of-wickets details sized to fit one screen as far as the available data and screen dimensions allow.
 
-Deployment:
-- Back up your current GitHub files first.
-- Replace index.html and overlay.html from this ZIP if you want the complete package deployed together.
-- If index.html has newer changes than the included copy, keep your newer index.html and replace only overlay.html.
-- After GitHub Pages deploys, hard-refresh the scorer and refresh/re-add the overlay URL in PRISM.
+GitHub upload:
+- Replace index.html and overlay.html in the repository with the two files in this ZIP.
+- Commit the changes and wait for GitHub Pages to deploy.
+- Refresh the scorer page and re-add/refresh the overlay URL in PRISM.
 
 Validation:
-- JavaScript syntax and ZIP integrity should be checked locally; full Firebase/scoring/PRISM live testing is still required.
+- JavaScript syntax check passed with Node.js.
+- ZIP integrity check passed.
+- Firebase live data, PRISM animation timing, and real-device one-screen fit still need to be tested in your actual match setup.

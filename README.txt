@@ -1,16 +1,20 @@
-Cricket Scorer by JCL — Overlay refinement
+Cricket Scorer by JCL — Full package with Bowler / This Over layout update
 
-Replace only overlay.html in the existing GitHub repository.
+Files:
+- index.html: current scorer application file included for a complete backup/package.
+- overlay.html: updated PRISM overlay.
 
-Changes:
-1. Moved the central team/score group slightly lower for visual balance.
-2. Removed the duplicate Innings 1 / RR line below the central score.
-3. First innings third panel rotates every 3 seconds:
-   - toss winner and batting/bowling decision
-   - overs completed and projected score
-   - current run rate and projected score
-4. Second innings shows target, runs/balls remaining and required run rate, cycling every 4 seconds.
-5. When the bowler changes, the new bowler is announced as “BOWLING NOW” for about 2.6 seconds, then the normal name returns.
-6. Kept the compact lower-third layout and existing 0.5% left/right margins.
+Overlay changes:
+1. Bowler heading is shown at the top with OVER number at the right.
+2. Bowler name appears on the next line.
+3. Bowler figures (wickets, runs, overs) appear on the next line.
+4. THIS OVER: appears immediately before the ball-by-ball row; the separate top "Bowler · This over" heading has been removed.
 
-Validation: JavaScript syntax check passed. Live Firebase and PRISM display should still be tested after deployment.
+Deployment:
+- Back up your current GitHub files first.
+- Replace index.html and overlay.html from this ZIP if you want the complete package deployed together.
+- If index.html has newer changes than the included copy, keep your newer index.html and replace only overlay.html.
+- After GitHub Pages deploys, hard-refresh the scorer and refresh/re-add the overlay URL in PRISM.
+
+Validation:
+- JavaScript syntax and ZIP integrity should be checked locally; full Firebase/scoring/PRISM live testing is still required.

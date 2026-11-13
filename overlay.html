@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<!-- JCL overlay build: 75% bottom scoreboard + target cycle + two-column result | 2026-11-13-r3 -->
+<!-- JCL overlay build: 75% bottom scoreboard + target cycle + two-column result | 2026-11-13-r4 -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -112,7 +112,7 @@
 .center-bottom span{width:100%;text-align:center}
 .over-label{transform:translateY(7px)!important}
 .chase-panel{position:relative}
-#targetHeading{display:none}
+#targetHeading{display:none!important}
 
 
 
@@ -148,6 +148,23 @@
 #inningsMeta{font-size:clamp(5px,.62vw,8px)!important;color:#dbe7f5!important;font-weight:900!important;text-align:center!important;white-space:nowrap}
 .bowler-announcement{color:#ffd166!important;text-transform:uppercase}
 
+
+/* Final typography and vertical balance requested on 13 Nov 2026 */
+#targetHeading{display:none!important}
+.chase-panel{justify-content:center!important;align-items:center!important;text-align:center!important}
+#targetCycle,#chaseInfo{width:100%;text-align:center!important;overflow-wrap:anywhere}
+#inningsMeta{margin-top:auto!important;align-self:stretch!important;text-align:center!important}
+.player-stat{transform:translateY(-2px)!important;align-self:center!important}
+.bowler-name,.player-name{font-size:clamp(9px,1.05vw,15px)!important;line-height:1.05!important}
+@media(max-width:700px){.bowler-name,.player-name{font-size:clamp(7px,1.55vw,10px)!important}}
+
+
+/* Bowler panel: keep the over label beside the Bowler heading, and put THIS OVER on the ball-results line. */
+.this-over-line{display:flex;align-items:center;gap:5px;min-width:0;flex-wrap:nowrap;margin-top:1px}
+.this-over-label{font-size:clamp(7px,.82vw,10px);font-weight:1000;color:var(--gold);white-space:nowrap;flex:0 0 auto}
+.this-over-line .ball-row{display:flex;align-items:center;gap:4px;min-width:0;flex-wrap:nowrap}
+.bowling .ball-head .section-label{font-size:clamp(8px,.95vw,11px)}
+@media(max-width:700px){.this-over-line{gap:2px}.this-over-label{font-size:clamp(5px,1.05vw,7px)}.this-over-line .ball-row{gap:1px}}
 </style>
 </head>
 <body>
@@ -169,10 +186,10 @@
  </section>
  <section class="chase-panel"><div class="section-label" id="targetHeading">MATCH TARGET</div><div id="targetCycle" class="target-cycle">TARGET —</div><div id="chaseInfo" class="chase-copy">RUNS / BALLS REMAINING</div><div id="inningsMeta" class="innings-meta">INNINGS 1 · LIVE</div></section>
  <section class="bowling">
-  <div class="ball-head"><div class="section-label">Bowler · This over</div><div class="over-label" id="overLabel">OVER 1</div></div>
+  <div class="ball-head"><div class="section-label">Bowler</div><div class="over-label" id="overLabel">OVER 1</div></div>
   <div class="bowler-name" id="bowler">Bowler</div>
-  <div class="bowler-figures" id="bowlerFigures">0-0 · 0.0 OV</div>
-  <div class="ball-row" id="ballRow"><span class="ball">—</span></div>
+  <div class="bowler-figures" id="bowlerFigures">0 W · 0 R · 0.0 OV</div>
+  <div class="this-over-line"><span class="this-over-label">THIS OVER:</span><div class="ball-row" id="ballRow"><span class="ball">—</span></div></div>
  </section>
  <div class="live-result-strip" id="liveResultStrip" hidden></div>
 </div>
@@ -267,28 +284,42 @@ function render(d){
  const tossLine=tossWinner!=="TOSS NOT RECORDED"?`${tossWinner.toUpperCase()} WON THE TOSS AND CHOSE TO ${choice}`:"TOSS NOT RECORDED";
  if(targetNum>0 || inningsNo>=2){
    if(window.__jclFirstInningsCycle){clearInterval(window.__jclFirstInningsCycle);window.__jclFirstInningsCycle=null;}
-   targetHeading.style.display="block";
-   targetCycle.textContent=`TARGET ${targetNum||"—"}`;
-   chaseInfo.textContent=`NEED ${runsNeeded} RUNS · ${ballsRemaining} BALLS LEFT`;
-   targetCycle.dataset.mode="target";
+   targetHeading.style.display="none";
    window.__jclRunsNeeded=runsNeeded;window.__jclBallsRemaining=ballsRemaining;window.__jclTargetValue=targetNum;window.__jclRequiredRate=ballsRemaining>0?runsNeeded/(ballsRemaining/6):0;
-   if(!window.__jclTargetCycleTimer){window.__jclTargetCycleTimer=setInterval(()=>{const a=$("targetCycle"),b=$("chaseInfo");if(!a||!b||!window.__jclTargetValue)return;const mode=a.dataset.mode||"target";if(mode==="target"){a.dataset.mode="need";a.textContent=`NEED ${Math.max(0,Number(window.__jclRunsNeeded)||0)} RUNS`;b.textContent=`${Math.max(0,Number(window.__jclBallsRemaining)||0)} BALLS LEFT`;}else if(mode==="need"){a.dataset.mode="rate";a.textContent=`REQUIRED RR ${Number(window.__jclRequiredRate||0).toFixed(2)}`;b.textContent=`TARGET ${Math.max(0,Number(window.__jclTargetValue)||0)}`;}else{a.dataset.mode="target";a.textContent=`TARGET ${Math.max(0,Number(window.__jclTargetValue)||0)}`;b.textContent=`NEED ${Math.max(0,Number(window.__jclRunsNeeded)||0)} RUNS · ${Math.max(0,Number(window.__jclBallsRemaining)||0)} BALLS LEFT`; }},4000);}
+   window.__jclCurrentRate=Number(d.RunRate||0);
+   const views=[
+     {mode:"target",top:`TARGET ${targetNum||"—"}`,bottom:""},
+     {mode:"need",top:`NEED ${runsNeeded} RUNS`,bottom:`${ballsRemaining} BALLS LEFT`},
+     {mode:"rate",top:`REQUIRED RR ${window.__jclRequiredRate.toFixed(2)}`,bottom:`CURRENT RR ${window.__jclCurrentRate.toFixed(2)}`}
+   ];
+   if(!window.__jclTargetCycleTimer){
+     window.__jclTargetCycleIndex=0;
+     window.__jclTargetCycleTimer=setInterval(()=>{
+       const a=$("targetCycle"),b=$("chaseInfo");if(!a||!b)return;
+       window.__jclTargetCycleIndex=(window.__jclTargetCycleIndex+1)%3;
+       const v=window.__jclTargetCycleViews?.[window.__jclTargetCycleIndex];
+       if(v){a.textContent=v.top;b.textContent=v.bottom;a.dataset.mode=v.mode;}
+     },5000);
+   }
+   window.__jclTargetCycleViews=views;
+   const v=views[window.__jclTargetCycleIndex||0];targetCycle.textContent=v.top;chaseInfo.textContent=v.bottom;targetCycle.dataset.mode=v.mode;
  } else {
-   if(window.__jclTargetCycleTimer){clearInterval(window.__jclTargetCycleTimer);window.__jclTargetCycleTimer=null;}
+   if(window.__jclTargetCycleTimer){clearInterval(window.__jclTargetCycleTimer);window.__jclTargetCycleTimer=null;window.__jclTargetCycleIndex=0;}
    targetHeading.style.display="none";
    window.__jclFirstInningsViews=[
-     {top:tossLine,bottom:`${oversLimit} OVERS MATCH · PROJECTED ${projected}`},
+     {top:tossLine,bottom:""},
      {top:`${Math.floor(ballsFaced/6)}.${ballsFaced%6} OVERS COMPLETED`,bottom:`PROJECTED SCORE ${projected}`},
-     {top:`CURRENT RUN RATE ${currentRR}`,bottom:`PROJECTED SCORE ${projected}`}
+     {top:`CURRENT RUN RATE ${currentRR}`,bottom:""}
    ];
-   if(!window.__jclFirstInningsCycle){window.__jclFirstInningsCycle=setInterval(()=>{window.__jclFirstInningsIndex=((window.__jclFirstInningsIndex||0)+1)%3;const v=window.__jclFirstInningsViews?.[window.__jclFirstInningsIndex];if(v){$("targetCycle").textContent=v.top;$("chaseInfo").textContent=v.bottom;}},3000);}
+   if(!window.__jclFirstInningsCycle){window.__jclFirstInningsCycle=setInterval(()=>{window.__jclFirstInningsIndex=((window.__jclFirstInningsIndex||0)+1)%3;const v=window.__jclFirstInningsViews?.[window.__jclFirstInningsIndex];if(v){$("targetCycle").textContent=v.top;$("chaseInfo").textContent=v.bottom;}},4000);}
    const view=window.__jclFirstInningsViews[window.__jclFirstInningsIndex||0];targetCycle.textContent=view.top;chaseInfo.textContent=view.bottom;
  }
  // No duplicate innings/RR/toss line under the central score; all match context is in the third panel.
- $("striker").textContent=safe(d.Striker,"Batter 1");$("nonStriker").textContent=safe(d.NonStriker,"Batter 2");
+ const capFirst=(value,fallback)=>{const n=safe(value,fallback);return n.charAt(0).toUpperCase()+n.slice(1);};
+ $("striker").textContent=capFirst(d.Striker,"Batter 1");$("nonStriker").textContent=capFirst(d.NonStriker,"Batter 2");
  $("strikerStats").textContent=`${d.StrikerRuns??0} (${d.StrikerBalls??0})`;$("nonStrikerStats").textContent=`${d.NonStrikerRuns??0} (${d.NonStrikerBalls??0})`;
  $("strikerExtras").textContent=`4s: ${d.StrikerFours??0} · 6s: ${d.StrikerSixes??0}`;$("nonStrikerExtras").textContent=`4s: ${d.NonStrikerFours??0} · 6s: ${d.NonStrikerSixes??0}`;
- const bowlerName=safe(d.Bowler,"Bowler");
+ const bowlerName=capFirst(d.Bowler,"Bowler");
  if(window.__jclLastBowlerName===undefined){window.__jclLastBowlerName=bowlerName;$("bowler").textContent=bowlerName;}
  else if(bowlerName!==window.__jclLastBowlerName){window.__jclLastBowlerName=bowlerName;const el=$("bowler");el.textContent=`${bowlerName} · BOWLING NOW`;el.classList.add("bowler-announcement");clearTimeout(window.__jclBowlerAnnounceTimer);window.__jclBowlerAnnounceTimer=setTimeout(()=>{if(window.__jclLastBowlerName===bowlerName){el.textContent=bowlerName;el.classList.remove("bowler-announcement");}},2600);}
  else if(!$("bowler").classList.contains("bowler-announcement"))$("bowler").textContent=bowlerName;

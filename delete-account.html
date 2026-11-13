@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#456b8a"><title>Delete Account — Cricket Scorer by JCL</title>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#eef3f8;color:#1d2832;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;align-items:center;justify-content:center;padding:18px}.card{width:min(520px,100%);background:#fff;border:1px solid #d8e0e7;border-radius:20px;padding:24px;box-shadow:0 12px 35px #20304012}h1{font-size:23px;margin:0 0 8px}p,li{font-size:14px;line-height:1.55;color:#526170}.warning{background:#fff5e8;border:1px solid #f0d1a6;padding:12px;border-radius:12px;color:#704a17}.btn{display:block;width:100%;border:0;border-radius:11px;padding:13px 15px;margin-top:12px;font:700 15px system-ui;cursor:pointer;background:#456b8a;color:white}.btn.danger{background:#b4232c}.btn:disabled{opacity:.55;cursor:wait}.status{min-height:24px;margin-top:12px;font-size:13px;white-space:pre-wrap}.muted{font-size:12px;color:#75818c}a{color:#456b8a}
+</style>
+</head>
+<body><main class="card">
+<h1>Delete your JCL Cricket Scorer account</h1>
+<p>This page lets you permanently delete your Cricket Scorer by JCL account and the cloud match records saved under your Google account.</p>
+<div class="warning"><b>Important — this cannot be undone.</b><ul><li>Your JCL sign-in account will be deleted from Firebase Authentication.</li><li>Your saved private match records and their public PRISM overlay records will be deleted.</li><li>You will lose access to those cloud matches. Export anything you want to keep before continuing.</li></ul></div>
+<p id="account">Checking sign-in status…</p>
+<button id="signIn" class="btn">Continue with Google</button>
+<button id="delete" class="btn danger" disabled>Permanently Delete My Account</button>
+<p class="muted">For security, Google will ask you to verify your account again before deletion. If deletion fails, the page will show the reason and your data will not be reported as deleted.</p>
+<p><a href="./">Back to Cricket Scorer by JCL</a></p><div id="status" class="status" role="status" aria-live="polite"></div>
+</main>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getFirestore,collection,query,where,getDocs,doc,deleteDoc} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {getAuth,GoogleAuthProvider,signInWithPopup,onAuthStateChanged,reauthenticateWithPopup,deleteUser} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+const firebaseConfig={apiKey:"AIzaSyDta_AAwNpU-9OAWtVgYGhB-GmGaZZFLsI",authDomain:"jcl-cricket-scorer.firebaseapp.com",projectId:"jcl-cricket-scorer",storageBucket:"jcl-cricket-scorer.firebasestorage.app",messagingSenderId:"112116011790",appId:"1:112116011790:web:d6d2a4ca7416dce53efd5f",measurementId:"G-DFJ3V8ZCV8"};
+const app=initializeApp(firebaseConfig),db=getFirestore(app),auth=getAuth(app),provider=new GoogleAuthProvider();
+const $=id=>document.getElementById(id);let user=null,busy=false;
+onAuthStateChanged(auth,u=>{user=u;$('account').textContent=u?`Signed in as: ${u.email||u.displayName||'Google account'}`:'You are not signed in.';$('signIn').hidden=!!u;$('delete').disabled=!u||busy;});
+$('signIn').onclick=async()=>{try{$('status').textContent='Opening Google sign-in…';provider.setCustomParameters({prompt:'select_account'});await signInWithPopup(auth,provider);$('status').textContent='Signed in. Review the warning, then choose Delete My Account if you want to continue.';}catch(e){$('status').textContent='Google sign-in failed: '+(e.message||e);}};
+$('delete').onclick=async()=>{
+ if(!user||busy)return;
+ const email=user.email||'this Google account';
+ if(!confirm(`Permanently delete ${email}, all private matches owned by this account, and their public overlay records? This cannot be undone.`))return;
+ busy=true;$('delete').disabled=true;$('signIn').disabled=true;
+ try{
+  $('status').textContent='Please verify your Google account in the popup…';
+  await reauthenticateWithPopup(user,provider);
+  $('status').textContent='Finding your saved matches…';
+  const snap=await getDocs(query(collection(db,'Matches'),where('OwnerUid','==',user.uid)));
+  let done=0;
+  for(const match of snap.docs){
+   $('status').textContent=`Deleting saved match records… ${done+1} of ${snap.size}`;
+   await deleteDoc(doc(db,'PublicMatches',match.id));
+   await deleteDoc(doc(db,'Matches',match.id));done++;
+  }
+  $('status').textContent='Deleting your sign-in account…';
+  await deleteUser(user);
+  for(const key of Object.keys(localStorage)){if(/^jcl/i.test(key))localStorage.removeItem(key);}
+  $('account').textContent='Account deleted.';$('signIn').hidden=true;$('delete').hidden=true;
+  $('status').textContent=`Account deletion completed. ${done} saved match record(s) and corresponding public overlay record(s) were removed.`;
+ }catch(e){
+  console.error('JCL account deletion failed',e);
+  const code=e.code||'';
+  let hint='';
+  if(code==='auth/requires-recent-login')hint='Please sign in again and retry.';
+  else if(code==='permission-denied')hint='Firestore security rules blocked deletion. The account was not confirmed deleted; please contact JCL support.';
+  else if(code==='auth/popup-closed-by-user')hint='Google verification was cancelled. No completion is claimed.';
+  $('status').textContent='Deletion could not be completed: '+(e.message||e)+(hint?'\n'+hint:'');
+ }finally{busy=false;$('delete').disabled=!user;$('signIn').disabled=false;}
+};
+</script></body></html>

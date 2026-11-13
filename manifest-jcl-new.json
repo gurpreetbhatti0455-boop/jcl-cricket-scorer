@@ -1,0 +1,23 @@
+{
+  "name": "Cricket Scorer by JCL",
+  "short_name": "JCL Scorer",
+  "start_url": "/jcl-cricket-scorer/",
+  "scope": "/jcl-cricket-scorer/",
+  "display": "standalone",
+  "background_color": "#091321",
+  "theme_color": "#456b8a",
+  "icons": [
+    {
+      "src": "/jcl-cricket-scorer/jcl-app-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/jcl-cricket-scorer/jcl-app-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

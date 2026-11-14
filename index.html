@@ -1205,7 +1205,14 @@ window.__JCL_publishFirebase=async()=>{
  const privatePayload={...p,OwnerUid:currentUser.uid,OwnerEmail:currentUser.email||"",CreatedAtMs:window.__JCL_createdAtMs||Date.now(),UpdatedAt:serverTimestamp()};
  const publicPayload={MatchCode:p.MatchCode,AppMode:p.AppMode||"normal",Title:p.Title,MatchCountry:p.MatchCountry||"India",MatchState:p.MatchState||"",MatchCity:p.MatchCity||"",Status:p.Status,ResultText:p.ResultText||"",InningsScorecards:p.InningsScorecards||[],CreatedAtMs:privatePayload.CreatedAtMs,UpdatedAt:serverTimestamp(),TeamA:p.TeamA,TeamB:p.TeamB,Runs:p.Runs,Wickets:p.Wickets,LegalBalls:p.LegalBalls,BattingTeam:p.BattingTeam,BowlingTeam:p.BowlingTeam,Overs:p.Overs,RunRate:p.RunRate,Target:p.Target,InningsNo:p.InningsNo,Striker:p.Striker,StrikerRuns:p.StrikerRuns,StrikerBalls:p.StrikerBalls,StrikerFours:p.StrikerFours,StrikerSixes:p.StrikerSixes,NonStriker:p.NonStriker,NonStrikerRuns:p.NonStrikerRuns,NonStrikerBalls:p.NonStrikerBalls,NonStrikerFours:p.NonStrikerFours,NonStrikerSixes:p.NonStrikerSixes,Bowler:p.Bowler,BowlerRuns:p.BowlerRuns,BowlerWickets:p.BowlerWickets,BowlerLegal:p.BowlerLegal,BowlerWides:p.BowlerWides,BowlerNoBalls:p.BowlerNoBalls,CurrentOverNo:p.CurrentOverNo,CurrentOverBalls:p.CurrentOverBalls,Toss:p.Toss,MaxOvers:p.MaxOvers};
  const comparable=JSON.stringify({...privatePayload,UpdatedAt:null});if(comparable===lastJson||busy){if(busy)queued=true;return;}lastJson=comparable;busy=true;
- try{await setDoc(doc(db,"Matches",p.MatchCode),privatePayload,{merge:true});await setDoc(doc(db,"PublicMatches",p.MatchCode),publicPayload,{merge:true});}
+ try{
+  // Publish the small public overlay document first and save the private FullState in parallel.
+  const publicWrite=setDoc(doc(db,"PublicMatches",p.MatchCode),publicPayload,{merge:true});
+  const privateWrite=setDoc(doc(db,"Matches",p.MatchCode),privatePayload,{merge:true});
+  const results=await Promise.allSettled([publicWrite,privateWrite]);
+  const failed=results.find(r=>r.status==="rejected");
+  if(failed)throw failed.reason;
+ }
  catch(e){lastJson="";console.error("Firebase score sync failed",e);const st=$("status");if(st)st.textContent="Firebase sync error: "+e.message;}
  finally{busy=false;if(queued){queued=false;window.__JCL_publishFirebase();}}
 };

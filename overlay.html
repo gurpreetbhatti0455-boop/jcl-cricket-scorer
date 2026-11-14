@@ -64,9 +64,9 @@
 .lower{left:12.5%;right:12.5%;bottom:0;width:75%;min-height:clamp(92px,19vh,150px);max-height:30vh;grid-template-columns:minmax(0,1.05fr) minmax(0,1.35fr) minmax(0,.78fr) minmax(0,.95fr);grid-template-rows:minmax(0,1fr) auto;clip-path:none;border-radius:10px 10px 0 0}
 .batters,.center,.chase-panel,.bowling{padding:7px 8px;min-width:0}
 .batters{gap:3px}.player{grid-template-columns:minmax(0,1fr) auto;row-gap:1px;column-gap:4px}.player-name{font-size:clamp(9px,1.05vw,15px)}.player-stat{font-size:clamp(10px,1.1vw,15px)}.player-sub{grid-column:1/-1;text-align:center;margin:0;font-size:clamp(7px,.78vw,10px);letter-spacing:0;color:#f1d58a}
-.chase-panel{display:flex;flex-direction:column;justify-content:center;gap:7px;background:linear-gradient(135deg,#1a3046,#102237);border-left:1px solid var(--line);border-right:1px solid var(--line);text-align:center}.target-cycle{font-family:'Oswald',Inter,sans-serif;font-size:clamp(13px,1.5vw,21px);font-weight:900;color:var(--gold);line-height:1.05}.chase-copy{font-size:clamp(8px,.9vw,12px);font-weight:900;line-height:1.25;color:#fff;overflow-wrap:anywhere}.innings-meta{margin-top:auto;padding-top:3px;text-align:right;font-size:clamp(6px,.7vw,9px);font-weight:900;color:#c8d7e6;white-space:nowrap}.live-result-strip{grid-column:1/-1;background:linear-gradient(90deg,#173f2c,#24633d);border-top:1px solid #ffffff35;color:#fff;text-align:center;padding:4px 8px;font-size:clamp(9px,1vw,13px);font-weight:1000;letter-spacing:.4px}
+.chase-panel{display:flex;flex-direction:column;justify-content:center;gap:7px;background:linear-gradient(135deg,#1a3046,#102237);border-left:1px solid var(--line);border-right:1px solid var(--line);text-align:center}.target-cycle{font-family:'Oswald',Inter,sans-serif;font-size:clamp(13px,1.5vw,21px);font-weight:900;color:var(--gold);line-height:1.05}.chase-copy{font-size:clamp(8px,.9vw,12px);font-weight:900;line-height:1.25;color:#fff;overflow-wrap:anywhere}.innings-meta{margin-top:auto;padding-top:3px;text-align:right;font-size:clamp(6px,.7vw,9px);font-weight:900;color:#c8d7e6;white-space:nowrap}.live-result-strip{position:fixed;left:0;right:0;bottom:var(--jcl-scoreboard-height,90px);z-index:29;background:linear-gradient(90deg,rgba(13,55,37,.98),rgba(34,105,63,.98));border-top:2px solid #ffd166;border-bottom:1px solid #ffffff45;color:#fff;text-align:center;padding:7px 10px;font-size:clamp(11px,1.15vw,16px);font-weight:1000;letter-spacing:.35px;text-shadow:0 1px 2px #0009;box-shadow:0 -3px 14px #0006;line-height:1.25}
 .match-finish{inset:8% 12.5% 21%;max-height:71vh;text-align:center}.finish-scorecards-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}.finish-innings{min-width:0;margin:6px 0;padding:7px}.finish-table{font-size:clamp(7px,.75vw,10px);table-layout:auto}.finish-table th,.finish-table td{padding:3px 2px;overflow-wrap:anywhere}.finish-innings h3{font-size:clamp(10px,1.1vw,15px)}.finish-score{font-size:clamp(18px,2vw,28px)}.finish-fow{font-size:clamp(7px,.7vw,9px);line-height:1.35;color:#dbe7f5}.finish-fow div{padding:2px 0;border-bottom:1px solid #ffffff18}
-@media(max-width:700px){.lower{left:12.5%;right:12.5%;width:75%;bottom:0;grid-template-columns:minmax(0,1fr) minmax(0,1.18fr) minmax(0,.75fr) minmax(0,.9fr);min-height:90px;max-height:31vh}.batters,.center,.chase-panel,.bowling{padding:5px 4px;gap:3px}.player-name{font-size:clamp(7px,2.1vw,11px)}.player-stat{font-size:clamp(8px,2.2vw,12px)}.player-sub{font-size:clamp(6px,1.5vw,8px)}.team{font-size:clamp(7px,1.8vw,10px);padding:3px 4px}.vs{font-size:6px;padding:2px}.score{font-size:clamp(17px,4.2vw,29px)}.overs{font-size:clamp(8px,1.8vw,11px)}.target{font-size:clamp(6px,1.45vw,9px)}.center-bottom{font-size:6px;gap:2px}.bowler-name{font-size:clamp(8px,2vw,12px)}.bowler-figures{font-size:clamp(6px,1.6vw,9px)}.ball{min-width:12px;height:12px;font-size:6px}.ball-row{gap:1px}.target-cycle{font-size:clamp(10px,2.4vw,15px)}.chase-copy{font-size:clamp(6px,1.55vw,9px)}.innings-meta{font-size:6px}.match-finish{inset:3% 2% 18%;max-height:79vh;padding:7px}.finish-innings{padding:5px;margin:3px 0}.finish-table th,.finish-table td{padding:2px 1px;font-size:7px}}
+@media(max-width:700px){.live-result-strip{padding:6px 5px;font-size:clamp(9px,2.3vw,13px)}.lower{left:12.5%;right:12.5%;width:75%;bottom:0;grid-template-columns:minmax(0,1fr) minmax(0,1.18fr) minmax(0,.75fr) minmax(0,.9fr);min-height:90px;max-height:31vh}.batters,.center,.chase-panel,.bowling{padding:5px 4px;gap:3px}.player-name{font-size:clamp(7px,2.1vw,11px)}.player-stat{font-size:clamp(8px,2.2vw,12px)}.player-sub{font-size:clamp(6px,1.5vw,8px)}.team{font-size:clamp(7px,1.8vw,10px);padding:3px 4px}.vs{font-size:6px;padding:2px}.score{font-size:clamp(17px,4.2vw,29px)}.overs{font-size:clamp(8px,1.8vw,11px)}.target{font-size:clamp(6px,1.45vw,9px)}.center-bottom{font-size:6px;gap:2px}.bowler-name{font-size:clamp(8px,2vw,12px)}.bowler-figures{font-size:clamp(6px,1.6vw,9px)}.ball{min-width:12px;height:12px;font-size:6px}.ball-row{gap:1px}.target-cycle{font-size:clamp(10px,2.4vw,15px)}.chase-copy{font-size:clamp(6px,1.55vw,9px)}.innings-meta{font-size:6px}.match-finish{inset:3% 2% 18%;max-height:79vh;padding:7px}.finish-innings{padding:5px;margin:3px 0}.finish-table th,.finish-table td{padding:2px 1px;font-size:7px}}
 @media(max-width:390px){.lower{grid-template-columns:minmax(0,.92fr) minmax(0,1.05fr) minmax(0,.7fr) minmax(0,.8fr)}.section-label{font-size:6px;letter-spacing:.2px}.team-role{display:none}.scoreline{gap:4px}.finish-scorecards-grid{gap:4px}.finish-innings h3{font-size:9px}.finish-table th,.finish-table td{font-size:6px}}
 @media(max-height:420px){.lower{bottom:0;min-height:76px;max-height:32vh}}
 
@@ -328,6 +328,29 @@ function detectEvents(d){
  if(newLegal>oldLegal&&newLegal>0&&newLegal%6===0&&oldLegal%6!==0&&d.Status!=="completed"&&d.Status!=="innings-complete")showOverCard(d);
  previousSnapshot=d;
 }
+function updateResultBanner(d){
+ const strip=$("liveResultStrip"),lower=$("lowerScoreboard");
+ if(!strip||!lower)return;
+ const place=()=>{document.documentElement.style.setProperty("--jcl-scoreboard-height",`${Math.ceil(lower.getBoundingClientRect().height)}px`);};
+ place();
+ if(!window.__jclBannerResizeBound){window.addEventListener("resize",place);window.__jclBannerResizeBound=true;}
+ strip.hidden=true;strip.textContent="";
+ strip.classList.remove("innings-break","match-result");
+ if(d.Status==="innings-complete"&&Number(d.InningsNo)===1){
+  const team=safe(d.BattingTeam,"Batting team");
+  const opponent=safe(d.BowlingTeam,"Opposition");
+  const runs=Number(d.Runs)||0,wickets=Number(d.Wickets)||0;
+  const maxOvers=Number(d.MaxOvers)||20;
+  const legal=Number(d.LegalBalls)||0;
+  const overs=`${Math.floor(legal/6)}.${legal%6}`;
+  const target=runs+1;
+  strip.textContent=`${team} ${runs}/${wickets} (${overs} Ov)  •  ${opponent} NEED ${target} RUNS IN ${maxOvers} OVERS`;
+  strip.hidden=false;strip.classList.add("innings-break");
+ }else if(d.Status==="completed"){
+  strip.textContent=safe(d.ResultText,"MATCH COMPLETED");
+  strip.hidden=false;strip.classList.add("match-result");
+ }
+}
 function render(d){
  detectEvents(d);
  const batting=safe(d.BattingTeam,d.TeamA||"Batting"),bowling=safe(d.BowlingTeam,d.TeamB||"Bowling");
@@ -401,12 +424,12 @@ function render(d){
  if(!balls.length){row.innerHTML='<span class="ball">WAIT</span>';}else{balls.slice(-6).forEach(b=>{const el=document.createElement("span");el.className=`ball ${ballClass(b.label)}`;el.textContent=safe(b.label,"·");el.title=`Over ${b.over||d.CurrentOverNo||""}, ball ${b.ball||""}: ${b.runs||0} run(s)`;row.appendChild(el);});}
  const finish=$("matchFinish");
  const liveResult=$("liveResultStrip");
- liveResult.hidden=true;liveResult.textContent="";
+ updateResultBanner(d);
  if(d.Status==="completed"){
   const finishKey=String(d.MatchCode||matchId||"match")+":"+String(d.UpdatedAt||d.CreatedAtMs||"");
   if(completedMatchId!==finishKey){
    completedMatchId=finishKey;finish.classList.remove("show");$("lowerScoreboard").classList.remove("match-complete-hidden");clearTimeout(finishDelayTimer);$("finishResult").textContent=safe(d.ResultText,"MATCH COMPLETED");
-   finishDelayTimer=setTimeout(()=>{if(previousSnapshot&&previousSnapshot.Status==="completed"){finish.classList.add("show");$("lowerScoreboard").classList.add("match-complete-hidden");$("overCard").classList.remove("show");$("boundaryBanner").classList.remove("show");}},15000);
+   finishDelayTimer=setTimeout(()=>{if(previousSnapshot&&previousSnapshot.Status==="completed"){finish.classList.add("show");$("lowerScoreboard").classList.add("match-complete-hidden");$("liveResultStrip").hidden=true;$("overCard").classList.remove("show");$("boundaryBanner").classList.remove("show");}},15000);
   }
   // Scorecard remains hidden for 15 seconds so the live overlay/camera can show celebrations.
   if(completedMatchId===finishKey && finish.classList.contains("show")){}

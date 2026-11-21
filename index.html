@@ -678,7 +678,7 @@ function showMultiSessionHistory(){
   localStorage.setItem("jclMultipleMatchMode","1");localStorage.removeItem("jclTournamentMode");updateMultipleModeBadge();
   window.__JCL_openRemoteMatch(resumeId).catch(e=>alert(e.message));
  });
- $("homePanelContent").querySelectorAll("[data-session-copy-overlay]").forEach(b=>b.onclick=async()=>{const id=b.dataset.sessionCopyOverlay;if(!id||id.startsWith("local-")){alert("No cloud overlay link is available for this match yet.");return;}const url=new URL("overlay.html",location.href);url.searchParams.set("match",id);try{await navigator.clipboard.writeText(url.href);b.textContent="Copied!";}catch(e){prompt("Copy this overlay link",url.href);}});
+ $("homePanelContent").querySelectorAll("[data-session-copy-overlay]").forEach(b=>b.onclick=async()=>{const id=b.dataset.sessionCopyOverlay;if(!id||id.startsWith("local-")){alert("No cloud overlay link is available for this match yet.");return;}const url=new URL("jalandhar-cricket-live/",location.href);url.searchParams.set("match",id);try{await navigator.clipboard.writeText(url.href);b.textContent="Copied!";}catch(e){prompt("Copy this overlay link",url.href);}});
  $("homePanelContent").querySelectorAll("[data-session-points]").forEach(b=>b.onclick=()=>{const session=getMultiSessionHistory().find(x=>x.id===b.dataset.sessionPoints);if(!session)return;showPanel(`Point Table — ${session.name||"Multiple Match Session"}`,`${multiResultsHtml(session.results||[])}<button class="btn home-action" id="backToMultiHistory">← Back to Match History</button>`);$("backToMultiHistory").onclick=showMultiSessionHistory;});
  $("homePanelContent").querySelectorAll("[data-session-scoreboards]").forEach(b=>b.onclick=()=>showMultiSessionScoreboards(b.dataset.sessionScoreboards));
  $("homePanelContent").querySelectorAll("[data-session-end]").forEach(b=>b.onclick=()=>{if(finishMultiSession(b.dataset.sessionEnd,true)){showMultiSessionHistory();}});
@@ -822,7 +822,7 @@ async function confirmTossAndStart(){
   try{const activeSession=JSON.parse(localStorage.getItem("jclMultiSession")||"null");if(activeSession&&!activeSession.ended){activeSession.currentMatchId=jclMatchId;activeSession.lastMatchName=state.matchName;localStorage.setItem("jclMultiSession",JSON.stringify(activeSession));}}catch(e){}
  }
  window.__JCL_createdAtMs=Date.now();
- const overlayUrl=new URL("overlay.html",window.location.href);overlayUrl.searchParams.set("match",jclMatchId);jclOverlayUrl=overlayUrl.href;
+ const overlayUrl=new URL("jalandhar-cricket-live/",window.location.href);overlayUrl.searchParams.set("match",jclMatchId);jclOverlayUrl=overlayUrl.href;
  $("overlayLinkValue").value=jclOverlayUrl;
  $("overlayLinkBackdrop").classList.remove("hidden");
  render();
@@ -1168,7 +1168,7 @@ window.__JCL_restoreState=(saved,docId,savedUndoStack=[])=>{
  state=saved; manualTarget=Number(saved.manualTarget)>0?Number(saved.manualTarget):null; jclMatchId=docId; undoStack=Array.isArray(savedUndoStack)?savedUndoStack.slice(-12):[]; widePending=false; pendingBowlerSelection=false;
  $("teamA").value=state.teams?.[0]||"Team 1"; $("teamB").value=state.teams?.[1]||"Team 2"; $("matchName").value=state.matchName||"JCL Match"; $("matchCountry").value=state.matchCountry||"India"; $("matchState").value=state.matchState||""; $("matchCity").value=state.matchCity||"";
  $("maxOvers").value=String(state.maxOvers||20); $("playerCount").value=String(state.playerCount||11)=== "11"?"11":"manual"; $("manualPlayerCount").value=String(state.playerCount||11); $("manualPlayerCount").classList.toggle("hidden",$("playerCount").value!=="manual"); $("currentBowler").value=state.current.bowler||"Bowler 1";
- const overlayUrl=new URL("overlay.html",window.location.href);overlayUrl.searchParams.set("match",jclMatchId);jclOverlayUrl=overlayUrl.href;
+ const overlayUrl=new URL("jalandhar-cricket-live/",window.location.href);overlayUrl.searchParams.set("match",jclMatchId);jclOverlayUrl=overlayUrl.href;
  document.body.classList.remove("home-mode");document.body.classList.add("match-live"); render(); record("Match restored. Continue scoring.");
 };
 const __jclOriginalRender=render;
@@ -1307,7 +1307,7 @@ async function listScreen(mode){
   const tourBtn=$("createTournamentFromHistory");if(tourBtn)tourBtn.onclick=()=>showModeLanding("tournament");
   $("homePanelContent").querySelectorAll("[data-open-match]").forEach(b=>b.onclick=()=>window.__JCL_openRemoteMatch(b.dataset.openMatch).catch(e=>alert(e.message)));
   $("homePanelContent").querySelectorAll("[data-scoreboard]").forEach(b=>b.onclick=()=>openSavedMatchScorecard(b.dataset.scoreboard));
-  $("homePanelContent").querySelectorAll("[data-copy-overlay]").forEach(b=>b.onclick=async()=>{const url=new URL("overlay.html",location.href);url.searchParams.set("match",b.dataset.copyOverlay);try{await navigator.clipboard.writeText(url.href);b.textContent="Copied!";}catch(e){prompt("Copy this overlay link",url.href);}});
+  $("homePanelContent").querySelectorAll("[data-copy-overlay]").forEach(b=>b.onclick=async()=>{const url=new URL("jalandhar-cricket-live/",location.href);url.searchParams.set("match",b.dataset.copyOverlay);try{await navigator.clipboard.writeText(url.href);b.textContent="Copied!";}catch(e){prompt("Copy this overlay link",url.href);}});
   $("homePanelContent").querySelectorAll("[data-delete-match]").forEach(b=>b.onclick=()=>deleteSavedMatch(b.dataset.deleteMatch));
  }catch(e){showPanel("Error",`<p>${esc(e.message)}</p>`);}
 }

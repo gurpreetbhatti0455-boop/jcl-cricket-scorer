@@ -389,6 +389,11 @@ body.home-mode>header,body.home-mode>main,body.home-mode>footer{display:none!imp
 
 <footer>Cricket Scorer by JCL • Development prototype • Validate scoring rules before official tournament use.</footer>
 <script>
+// JCL message-only alert: remove browser/site origin heading from validation messages.
+(function(){
+ const style=document.createElement("style");style.textContent=".jcl-msg-backdrop{position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,.58);display:flex;align-items:center;justify-content:center;padding:18px}.jcl-msg-box{width:min(440px,96vw);background:#fff;border-radius:18px;padding:22px;box-shadow:0 16px 50px rgba(0,0,0,.32);color:#172b3b;font-family:inherit}.jcl-msg-box p{font-size:17px;line-height:1.45;margin:0 0 20px;white-space:pre-wrap}.jcl-msg-box button{display:block;margin-left:auto;min-width:84px;padding:11px 18px;border:0;border-radius:10px;background:#176b43;color:#fff;font-weight:800;font-size:16px}";document.head.appendChild(style);
+ window.alert=function(message){const backdrop=document.createElement("div");backdrop.className="jcl-msg-backdrop";backdrop.innerHTML='<div class="jcl-msg-box" role="alertdialog" aria-modal="true"><p></p><button type="button">OK</button></div>';backdrop.querySelector("p").textContent=String(message??"");const close=()=>backdrop.remove();backdrop.querySelector("button").onclick=close;backdrop.addEventListener("click",e=>{if(e.target===backdrop)close()});document.body.appendChild(backdrop);backdrop.querySelector("button").focus();};
+})();
 const $=id=>document.getElementById(id);
 // Classic-script bridge: the scoring/session code runs outside the ES module,
 // so it needs a global panel renderer rather than the module-scoped function.
@@ -468,14 +473,14 @@ function finishCurrentInnings(){
  const last=state.innings[state.innings.length-1];
  const alreadySaved=!!(last&&last.summary&&last.summary.team===state.teams[c.batting]&&last.summary.runs===c.runs&&last.summary.legalBalls===c.legalBalls);
  if(!alreadySaved){
-  state.innings.push({...clone(c),summary:{team:state.teams[c.batting],runs:c.runs,wickets:c.wickets,legalBalls:c.legalBalls}});
+  state.innings.push({...clone(c),bowlers:clone(c.bowlers||{}),summary:{team:state.teams[c.batting],runs:c.runs,wickets:c.wickets,legalBalls:c.legalBalls}});
  }
  if(state.inningsNo>=2){state.status="completed";record("Second innings complete. Match finished.");render();return}
  state.status="innings-complete";record("Innings complete. Tap a run button to set up the second innings.");render();
 }
 function openSecondInningsSetup(){
  if(state.inningsNo>=2){record("The match is complete.");return}
- if(!state.innings.length){state.innings.push({...clone(cur()),summary:{team:state.teams[cur().batting],runs:cur().runs,wickets:cur().wickets,legalBalls:cur().legalBalls}})}
+ if(!state.innings.length){state.innings.push({...clone(cur()),bowlers:clone(cur().bowlers||{}),summary:{team:state.teams[cur().batting],runs:cur().runs,wickets:cur().wickets,legalBalls:cur().legalBalls}})}
  $("secondStriker").value="";$("secondNon").value="";$("secondBowler").value="";
  $("inningsSetupBackdrop").classList.remove("hidden");
 }
@@ -501,7 +506,7 @@ function ordinalInningsName(n){return n===1?"1st Innings":"2nd Innings"}
 function ensureCurrentInningsSaved(){
  const c=cur(),last=state.innings[state.innings.length-1];
  if(!(last&&last.summary&&last.summary.team===state.teams[c.batting]&&last.summary.runs===c.runs&&last.summary.legalBalls===c.legalBalls)){
-  state.innings.push({...clone(c),summary:{team:state.teams[c.batting],runs:c.runs,wickets:c.wickets,legalBalls:c.legalBalls}});
+  state.innings.push({...clone(c),bowlers:clone(c.bowlers||{}),summary:{team:state.teams[c.batting],runs:c.runs,wickets:c.wickets,legalBalls:c.legalBalls}});
  }
 }
 function getMatchResult(){
@@ -532,7 +537,8 @@ function buildPrintableScorecard(){
    const nm=playerName(b.name)+(b.out?"":"*");
    return `<tr><td class="name">${escHtml(nm)}</td><td>${Number(b.runs)||0}</td><td>${Number(b.balls)||0}</td><td>${Number(b.fours)||0}</td><td>${Number(b.sixes)||0}</td><td>${b.out?"Out":"Not out"}</td></tr>`;
   }).join("");
-  const bowlingRows=Object.values(inn.bowlers||{}).map(b=>{
+  const bowlingFigures=inn.bowlers&&typeof inn.bowlers==="object"&&!Array.isArray(inn.bowlers)?Object.values(inn.bowlers):[];
+  const bowlingRows=bowlingFigures.map(b=>{
    const legal=Number(b.legal)||0,runs=Number(b.runs)||0;
    return `<tr><td class="name">${escHtml(playerName(b.name))}</td><td>${Math.floor(legal/6)}.${legal%6}</td><td>${runs}</td><td>${Number(b.wickets)||0}</td><td>${legal?((runs/(legal/6)).toFixed(2)):"0.00"}</td></tr>`;
   }).join("");
@@ -683,7 +689,7 @@ let c=cur();
 if(state.inningsNo===1&&(state.status==="innings-complete"||c.legalBalls>=state.maxOvers*6||c.wickets>=Math.max(1,(Number(state.playerCount)||11)-1))){
  const last=state.innings[state.innings.length-1];
  if(!(last&&last.summary&&last.summary.team===state.teams[c.batting]&&last.summary.runs===c.runs&&last.summary.legalBalls===c.legalBalls)){
-  state.innings.push({...clone(c),summary:{team:state.teams[c.batting],runs:c.runs,wickets:c.wickets,legalBalls:c.legalBalls}});
+  state.innings.push({...clone(c),bowlers:clone(c.bowlers||{}),summary:{team:state.teams[c.batting],runs:c.runs,wickets:c.wickets,legalBalls:c.legalBalls}});
  }
  state.status="innings-complete";
  if($("inningsSetupBackdrop").classList.contains("hidden"))openSecondInningsSetup();
@@ -778,7 +784,7 @@ function endWholeMatch(){
  pushUndo();const c=cur();
  const last=state.innings[state.innings.length-1];
  if(!(last&&last.summary&&last.summary.team===state.teams[c.batting]&&last.summary.runs===c.runs&&last.summary.legalBalls===c.legalBalls)){
-  state.innings.push({...clone(c),summary:{team:state.teams[c.batting],runs:c.runs,wickets:c.wickets,legalBalls:c.legalBalls}});
+  state.innings.push({...clone(c),bowlers:clone(c.bowlers||{}),summary:{team:state.teams[c.batting],runs:c.runs,wickets:c.wickets,legalBalls:c.legalBalls}});
  }
  state.status="completed";pendingBowlerSelection=false;widePending=false;
  $("endMatchBackdrop").classList.add("hidden");$("inningsSetupBackdrop").classList.add("hidden");$("bowlerBackdrop").classList.add("hidden");
@@ -1205,14 +1211,7 @@ window.__JCL_publishFirebase=async()=>{
  const privatePayload={...p,OwnerUid:currentUser.uid,OwnerEmail:currentUser.email||"",CreatedAtMs:window.__JCL_createdAtMs||Date.now(),UpdatedAt:serverTimestamp()};
  const publicPayload={MatchCode:p.MatchCode,AppMode:p.AppMode||"normal",Title:p.Title,MatchCountry:p.MatchCountry||"India",MatchState:p.MatchState||"",MatchCity:p.MatchCity||"",Status:p.Status,ResultText:p.ResultText||"",InningsScorecards:p.InningsScorecards||[],CreatedAtMs:privatePayload.CreatedAtMs,UpdatedAt:serverTimestamp(),TeamA:p.TeamA,TeamB:p.TeamB,Runs:p.Runs,Wickets:p.Wickets,LegalBalls:p.LegalBalls,BattingTeam:p.BattingTeam,BowlingTeam:p.BowlingTeam,Overs:p.Overs,RunRate:p.RunRate,Target:p.Target,InningsNo:p.InningsNo,Striker:p.Striker,StrikerRuns:p.StrikerRuns,StrikerBalls:p.StrikerBalls,StrikerFours:p.StrikerFours,StrikerSixes:p.StrikerSixes,NonStriker:p.NonStriker,NonStrikerRuns:p.NonStrikerRuns,NonStrikerBalls:p.NonStrikerBalls,NonStrikerFours:p.NonStrikerFours,NonStrikerSixes:p.NonStrikerSixes,Bowler:p.Bowler,BowlerRuns:p.BowlerRuns,BowlerWickets:p.BowlerWickets,BowlerLegal:p.BowlerLegal,BowlerWides:p.BowlerWides,BowlerNoBalls:p.BowlerNoBalls,CurrentOverNo:p.CurrentOverNo,CurrentOverBalls:p.CurrentOverBalls,Toss:p.Toss,MaxOvers:p.MaxOvers};
  const comparable=JSON.stringify({...privatePayload,UpdatedAt:null});if(comparable===lastJson||busy){if(busy)queued=true;return;}lastJson=comparable;busy=true;
- try{
-  // Publish the small public overlay document first and save the private FullState in parallel.
-  const publicWrite=setDoc(doc(db,"PublicMatches",p.MatchCode),publicPayload,{merge:true});
-  const privateWrite=setDoc(doc(db,"Matches",p.MatchCode),privatePayload,{merge:true});
-  const results=await Promise.allSettled([publicWrite,privateWrite]);
-  const failed=results.find(r=>r.status==="rejected");
-  if(failed)throw failed.reason;
- }
+ try{await setDoc(doc(db,"Matches",p.MatchCode),privatePayload,{merge:true});await setDoc(doc(db,"PublicMatches",p.MatchCode),publicPayload,{merge:true});}
  catch(e){lastJson="";console.error("Firebase score sync failed",e);const st=$("status");if(st)st.textContent="Firebase sync error: "+e.message;}
  finally{busy=false;if(queued){queued=false;window.__JCL_publishFirebase();}}
 };
